@@ -5,6 +5,7 @@ import type { LucideIcon } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '../../theme/useTheme'
 import { Label } from './Typography'
+import { t } from '@lyftr/shared'
 
 interface Props {
   icon: LucideIcon
@@ -43,7 +44,7 @@ export function StepperTile({
   const stepBtn = (delta: number, StepIcon: LucideIcon, side: string) => (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${delta < 0 ? 'Decrease' : 'Increase'} ${name}`}
+      accessibilityLabel={`${delta < 0 ? t('Decrease') : t('Increase')} ${name}`}
       disabled={disabled}
       onPress={() => tap(delta)}
       className={`flex-1 py-2.5 items-center justify-center active:bg-surface-muted ${disabled ? 'opacity-30' : ''} ${side}`}

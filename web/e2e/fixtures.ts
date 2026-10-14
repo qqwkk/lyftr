@@ -34,6 +34,7 @@ export const test = base.extend<object, { workerAuth: WorkerAuth }>({
       storageState: undefined,
     })
     const page = await context.newPage()
+    await page.addInitScript(() => localStorage.setItem('lyftr_language', 'en'))
     await page.goto('/register')
     await page.getByPlaceholder('you@example.com').fill(email)
     await page.locator('#password').fill(password)
@@ -61,3 +62,8 @@ export const test = base.extend<object, { workerAuth: WorkerAuth }>({
 })
 
 export { expect }
+
+// Preserve the language expected by the existing behavior scenarios.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('lyftr_language', 'en'))
+})

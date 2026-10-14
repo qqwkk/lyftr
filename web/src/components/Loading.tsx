@@ -1,3 +1,5 @@
+import { t } from '@lyftr/shared'
+
 export default function Loading() {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-surface-base">
@@ -88,7 +90,7 @@ export default function Loading() {
             lyftr
           </div>
           <div className="text-xs font-semibold text-tx-muted uppercase tracking-widest mt-2">
-            Loading
+            {t('Loading')}
           </div>
         </div>
       </div>

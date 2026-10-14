@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Clock, TimerOff, Pencil, Minus, Plus } from 'lucide-react'
+import { t } from '@lyftr/shared'
 
 interface Props {
   value: number
@@ -33,17 +34,17 @@ export default function RestPicker({ value, onChange }: Props) {
         {SEGMENTS.map(({ v, label, Icon }) => (
           <button key={v} type="button" onClick={() => { setShowCustom(false); onChange(v) }} className={seg(!customActive && value === v)}>
             <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-            <span className="text-[11px] font-semibold leading-none">{label}</span>
+            <span className="text-[11px] font-semibold leading-none">{t(label)}</span>
           </button>
         ))}
         <button type="button" onClick={() => setShowCustom(true)} className={seg(customActive)}>
           <Pencil className="w-3.5 h-3.5 flex-shrink-0" />
-          <span className="text-[11px] font-semibold leading-none">{isCustom ? `${value}s` : 'Custom'}</span>
+          <span className="text-[11px] font-semibold leading-none">{isCustom ? `${value}s` : t('Custom')}</span>
         </button>
       </div>
       {customActive && (
         <div className="flex items-center justify-center gap-2 mt-3">
-          <button type="button" aria-label="−5 seconds" onClick={() => onChange(Math.max(0, value - 5))}
+          <button type="button" aria-label={t("−5 seconds")} onClick={() => onChange(Math.max(0, value - 5))}
             className="p-2.5 rounded-xl bg-surface-muted border border-surface-border text-tx-secondary active:scale-95 hover:text-tx-primary">
             <Minus className="w-4 h-4" />
           </button>
@@ -55,11 +56,11 @@ export default function RestPicker({ value, onChange }: Props) {
               value={value}
               onChange={e => onChange(Math.max(0, Math.min(3600, Number(e.target.value) || 0)))}
               className="input w-28 text-center py-2.5 pr-9 text-base font-semibold tabular-nums"
-              aria-label="Rest seconds"
+              aria-label={t("Rest seconds")}
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-tx-muted pointer-events-none">sec</span>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-tx-muted pointer-events-none">{t("sec")}</span>
           </div>
-          <button type="button" aria-label="+5 seconds" onClick={() => onChange(Math.min(3600, value + 5))}
+          <button type="button" aria-label={t("+5 seconds")} onClick={() => onChange(Math.min(3600, value + 5))}
             className="p-2.5 rounded-xl bg-surface-muted border border-surface-border text-tx-secondary active:scale-95 hover:text-tx-primary">
             <Plus className="w-4 h-4" />
           </button>

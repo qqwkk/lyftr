@@ -6,7 +6,7 @@ import { format, subDays, addDays } from 'date-fns'
 import {
   CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Flame, Plus, Utensils,
 } from 'lucide-react-native'
-import { apiErrorMessage, isDailyStats, todayStr, type DailyStats, type FoodLog, dayToLocalDate} from '@lyftr/shared'
+import { apiErrorMessage, isDailyStats, todayStr, type DailyStats, type FoodLog, dayToLocalDate, t, formatLocalized } from '@lyftr/shared'
 import {
   AppText, Card, DateInput, ErrorState, IconButton, Label, PageHeader, Screen, SearchField, SectionHeader, SegmentedControl, Skeleton, SkeletonList, StatFailure, Toast,
 } from '../../../src/components/ui'
@@ -121,7 +121,7 @@ export default function Nutrition() {
           // rendered as 0 kcal, which is what "hasn't eaten yet" looks like.
           .then((st) => (isDailyStats(st) ? st : Promise.reject(new Error('unreadable'))))
           .catch((err) => {
-            statsMessage = apiErrorMessage(err, "The server didn't say what went wrong.")
+            statsMessage = apiErrorMessage(err, t("The server didn't say what went wrong."))
             return defaultStats
           }),
       ])
@@ -132,7 +132,7 @@ export default function Nutrition() {
       setLoadedDate(date)
     } catch (err: any) {
       if (id !== dayRequest.current) return
-      setError(apiErrorMessage(err, "The server didn't say what went wrong."))
+      setError(apiErrorMessage(err, t("The server didn't say what went wrong.")))
     } finally {
       if (id === dayRequest.current) hasLoadedRef.current = true
     }
@@ -156,7 +156,7 @@ export default function Nutrition() {
         setHistoryDataPeriod(historyPeriod)
         setHistoryError(null)
       })
-      .catch((err) => { if (id === historyRequest.current) setHistoryError(apiErrorMessage(err, "The server didn't say what went wrong.")) })
+      .catch((err) => { if (id === historyRequest.current) setHistoryError(apiErrorMessage(err, t("The server didn't say what went wrong."))) })
       .finally(() => { if (id === historyRequest.current) setHistoryLoading(false) })
   }, [historyPeriod])
   useEffect(() => { loadHistory() }, [loadHistory])
@@ -182,7 +182,7 @@ export default function Nutrition() {
   // Show the arrival toast once, then strip the param so it doesn't re-fire on re-render.
   useEffect(() => {
     if (params.logged) {
-      setToast(params.logged === 'Updated' ? 'Entry updated' : `Added to ${params.logged}`)
+      setToast(params.logged === 'Updated' ? t('Entry updated') : t('Added to {meal}', { meal: t(params.logged) }))
       router.setParams({ logged: undefined })
     }
   }, [params.logged])
@@ -207,7 +207,7 @@ export default function Nutrition() {
       })
       .catch((err) => {
         if (day !== selectedDateRef.current) return
-        setStatsError(apiErrorMessage(err, "The server didn't say what went wrong."))
+        setStatsError(apiErrorMessage(err, t("The server didn't say what went wrong.")))
       })
   }, [selectedDate])
 
@@ -225,10 +225,10 @@ export default function Nutrition() {
     return (
       <Screen>
         <View className="flex-1 gap-4 pt-4">
-          <PageHeader title="Nutrition" subtitle="Macros & meals" />
+          <PageHeader title={t("Nutrition")} subtitle={t("Macros & meals")} />
           <ErrorState
             size="page"
-            title="Couldn't load your food log"
+            title={t("Couldn't load your food log")}
             message={error}
             onRetry={() => { void loadDay(selectedDate) }}
           />
@@ -275,10 +275,10 @@ export default function Nutrition() {
   const nextDate = format(addDays(selectedDateObj, 1), 'yyyy-MM-dd')
   const canGoNext = selectedDate < todayStr()
   const dayLabel = isToday
-    ? 'Today'
+    ? t('Today')
     : selectedDate === format(subDays(new Date(), 1), 'yyyy-MM-dd')
-      ? 'Yesterday'
-      : format(selectedDateObj, 'EEE, MMM d')
+      ? t('Yesterday')
+      : formatLocalized(selectedDateObj, 'EEE, MMM d')
 
   // The whole screen is a single FlatList so the food rows virtualize (only on-screen
   // rows mount, and their thumbnails load lazily) instead of every entry — plus its
@@ -322,20 +322,20 @@ export default function Nutrition() {
           <View className="pt-4">
             <View className="gap-4">
               <PageHeader
-                title="Nutrition"
-                subtitle="Macros & meals"
-                action={<IconButton icon={Plus} variant="solid" size="md" label="Log Food" onPress={() => openLog(mealForNow())} />}
+                title={t("Nutrition")}
+                subtitle={t("Macros & meals")}
+                action={<IconButton icon={Plus} variant="solid" size="md" label={t("Log Food")} onPress={() => openLog(mealForNow())} />}
               />
 
               {/* Diary (per-day log) vs Trends (multi-day chart) */}
-              <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={setView} />
+              <SegmentedControl options={VIEW_OPTIONS.map(o => ({ ...o, label: t(o.label) }))} value={view} onChange={setView} />
 
               {isDiary ? (
               <>
               {/* Date navigator */}
               <View className="flex-row items-center gap-2">
                 <Pressable
-                  accessibilityLabel="Previous day"
+                  accessibilityLabel={t("Previous day")}
                   onPress={() => goDay(prevDate)}
                   className="items-center justify-center rounded-xl p-3 active:scale-95"
                 >
@@ -350,7 +350,7 @@ export default function Nutrition() {
                   />
                 </View>
                 <Pressable
-                  accessibilityLabel="Next day"
+                  accessibilityLabel={t("Next day")}
                   disabled={!canGoNext}
                   onPress={() => goDay(nextDate)}
                   className={`items-center justify-center rounded-xl p-3 active:scale-95 ${canGoNext ? '' : 'opacity-30'}`}
@@ -374,14 +374,14 @@ export default function Nutrition() {
                 </Card>
               ) : statsError ? (
                 <Card>
-                  <ErrorState title="Couldn't load today's totals" message={statsError} onRetry={() => { void loadDay(selectedDate) }} />
+                  <ErrorState title={t("Couldn't load today's totals")} message={statsError} onRetry={() => { void loadDay(selectedDate) }} />
                 </Card>
               ) : (
               <Card className="gap-5">
                 {/* Calorie hero */}
                 <View className="flex-row items-center justify-between">
                   <View>
-                    <AppText variant="caption" color="muted" className="mb-1 uppercase" style={{ letterSpacing: 0.5 }}>Calories</AppText>
+                    <AppText variant="caption" color="muted" className="mb-1 uppercase" style={{ letterSpacing: 0.5 }}>{t("Calories")}</AppText>
                     <View className="flex-row items-baseline gap-1.5">
                       <AppText variant="display" style={{ fontSize: 34, lineHeight: 38, fontVariant: ['tabular-nums'] }}>{Math.round(totalCals)}</AppText>
                       <AppText variant="body" color="muted">/ {calTarget}</AppText>
@@ -409,7 +409,7 @@ export default function Nutrition() {
                   </View>
                   <View className="flex-row justify-between">
                     <AppText variant="caption" color="muted" style={{ fontSize: 10 }}>0</AppText>
-                    <AppText variant="caption" color="muted" style={{ fontSize: 10 }}>{calTarget} kcal goal</AppText>
+                    <AppText variant="caption" color="muted" style={{ fontSize: 10 }}>{calTarget} {t("kcal goal")}</AppText>
                   </View>
                 </View>
 
@@ -419,13 +419,13 @@ export default function Nutrition() {
                     uneven.) */}
                 <View className="flex-row">
                   <View className="flex-1 items-center">
-                    <MacroRing value={stats?.total_protein ?? 0} target={settings.protein_target} color={MACRO_COLORS.protein} label="Protein" />
+                    <MacroRing value={stats?.total_protein ?? 0} target={settings.protein_target} color={MACRO_COLORS.protein} label={t("Protein")} />
                   </View>
                   <View className="flex-1 items-center">
-                    <MacroRing value={stats?.total_carbs ?? 0} target={settings.carb_target} color={MACRO_COLORS.carbs} label="Carbs" />
+                    <MacroRing value={stats?.total_carbs ?? 0} target={settings.carb_target} color={MACRO_COLORS.carbs} label={t("Carbs")} />
                   </View>
                   <View className="flex-1 items-center">
-                    <MacroRing value={stats?.total_fat ?? 0} target={settings.fat_target} color={MACRO_COLORS.fat} label="Fat" />
+                    <MacroRing value={stats?.total_fat ?? 0} target={settings.fat_target} color={MACRO_COLORS.fat} label={t("Fat")} />
                   </View>
                 </View>
               </Card>
@@ -435,12 +435,12 @@ export default function Nutrition() {
               <>
               {/* Daily-average macros over the selected history window */}
               <View className="gap-2">
-                <Label className="px-1">Daily average · {historyPeriod}</Label>
+                <Label className="px-1">{t("Daily average ·")} {historyPeriod}</Label>
                 <View className="flex-row gap-3">
                   {([
-                    ['Protein', 'protein', MACRO_COLORS.protein],
-                    ['Carbs', 'carbs', MACRO_COLORS.carbs],
-                    ['Fat', 'fat', MACRO_COLORS.fat],
+                    [t('Protein'), 'protein', MACRO_COLORS.protein],
+                    [t('Carbs'), 'carbs', MACRO_COLORS.carbs],
+                    [t('Fat'), 'fat', MACRO_COLORS.fat],
                   ] as const).map(([label, key, color]) => (
                     <Card key={key} className="flex-1" style={{ paddingHorizontal: 12 }}>
                       <View className="mb-2 flex-row items-center gap-1.5">
@@ -448,11 +448,11 @@ export default function Nutrition() {
                         <Label numberOfLines={1}>{label}</Label>
                       </View>
                       {histDays === 0 && historyError ? (
-                        <StatFailure label={`Couldn't load average ${label.toLowerCase()}`} />
+                        <StatFailure label={t("Couldn't load average {label}", { label: label.toLowerCase() })} />
                       ) : (
                         <View className="flex-row items-end gap-1">
                           <AppText variant="heading" style={{ fontVariant: ['tabular-nums'] }}>{avgMacro(key)}</AppText>
-                          {histDays ? <AppText variant="caption" color="muted" className="mb-0.5">g</AppText> : null}
+                          {histDays ? <AppText variant="caption" color="muted" className="mb-0.5">{t("g")}</AppText> : null}
                         </View>
                       )}
                     </Card>
@@ -463,21 +463,21 @@ export default function Nutrition() {
               {/* Macro history */}
               <Card>
                 <SectionHeader
-                  title="Macro History"
+                  title={t("Macro History")}
                   right={<View style={{ width: 150 }}><SegmentedControl size="sm" options={HISTORY_OPTIONS} value={historyPeriod} onChange={setHistoryPeriod} /></View>}
                   className="mb-4"
                 />
                 <View onLayout={(e) => setChartWidth(e.nativeEvent.layout.width)}>
                   {historyLoading ? (
                     <View className="h-48 items-center justify-center">
-                      <AppText variant="caption" color="muted">Loading…</AppText>
+                      <AppText variant="caption" color="muted">{t("Loading…")}</AppText>
                     </View>
                   ) : historyPoints.length === 0 && historyError ? (
-                    <ErrorState title="Couldn't load your history" message={historyError} onRetry={() => { void loadHistory() }} />
+                    <ErrorState title={t("Couldn't load your history")} message={historyError} onRetry={() => { void loadHistory() }} />
                   ) : historyPoints.length === 0 ? (
                     <View className="h-48 items-center justify-center gap-2">
                       <CalendarDays size={32} color={colors.txMuted} style={{ opacity: 0.4 }} />
-                      <AppText variant="caption" color="muted">No data yet — start logging meals</AppText>
+                      <AppText variant="caption" color="muted">{t("No data yet — start logging meals")}</AppText>
                     </View>
                   ) : (
                     <MacroHistoryChart data={historyPoints} width={chartW} height={220} />
@@ -486,9 +486,9 @@ export default function Nutrition() {
                 {/* Legend */}
                 <View className="mt-4 flex-row justify-center gap-4">
                   {[
-                    { color: MACRO_COLORS.protein, label: 'Protein' },
-                    { color: MACRO_COLORS.carbs, label: 'Carbs' },
-                    { color: MACRO_COLORS.fat, label: 'Fat' },
+                    { color: MACRO_COLORS.protein, label: t('Protein') },
+                    { color: MACRO_COLORS.carbs, label: t('Carbs') },
+                    { color: MACRO_COLORS.fat, label: t('Fat') },
                   ].map((m) => (
                     <View key={m.label} className="flex-row items-center gap-1.5">
                       <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: m.color }} />
@@ -506,7 +506,7 @@ export default function Nutrition() {
             {isDiary ? (
             <View className="mt-8 gap-3 pb-3">
               <View className="flex-row items-center justify-between px-1">
-                <Label>{isToday ? "Today's Food" : 'Food'}</Label>
+                <Label>{isToday ? t("Today's Food") : t('Food')}</Label>
                 {dayEntries.length > 0 && !dayPending ? (
                   <AppText variant="caption" color="muted" style={{ fontVariant: ['tabular-nums'] }}>
                     {q ? `${filteredEntries.length} of ${dayEntries.length}` : `${dayEntries.length} ${dayEntries.length === 1 ? 'item' : 'items'}`}
@@ -514,7 +514,7 @@ export default function Nutrition() {
                 ) : null}
               </View>
               {dayEntries.length > 0 && !dayPending ? (
-                <SearchField value={foodQuery} onChangeText={setFoodQuery} placeholder="Search this day's food…" />
+                <SearchField value={foodQuery} onChangeText={setFoodQuery} placeholder={t("Search this day's food…")} />
               ) : null}
             </View>
             ) : null}
@@ -526,14 +526,14 @@ export default function Nutrition() {
           ) : q ? (
             <View className="items-center px-4 py-8">
               <Utensils size={28} color={colors.txMuted} style={{ opacity: 0.4 }} />
-              <AppText variant="body" color="muted" className="mt-2">No matches for “{foodQuery.trim()}”</AppText>
+              <AppText variant="body" color="muted" className="mt-2">{t("No matches for “")}{foodQuery.trim()}”</AppText>
             </View>
           ) : (
             <Card className="overflow-hidden p-0">
               <Pressable onPress={() => openLog(mealForNow())} className="items-center px-4 py-10 active:opacity-70">
                 <Utensils size={32} color={colors.txMuted} style={{ opacity: 0.4 }} />
-                <AppText variant="body" color="muted" className="mt-2">No food logged yet</AppText>
-                <AppText variant="caption" color="muted" className="mt-1">Tap to log your first meal</AppText>
+                <AppText variant="body" color="muted" className="mt-2">{t("No food logged yet")}</AppText>
+                <AppText variant="caption" color="muted" className="mt-1">{t("Tap to log your first meal")}</AppText>
               </Pressable>
             </Card>
           )

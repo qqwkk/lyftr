@@ -10,7 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { Barcode } from 'lucide-react-native'
-import { eanModules, formatBarcode } from '@lyftr/shared'
+import { eanModules, formatBarcode, t } from '@lyftr/shared'
 import { AppText, Card } from '../ui'
 import { useTheme } from '../../theme/useTheme'
 
@@ -82,7 +82,7 @@ export function BarcodeLookup({ code }: { code: string }) {
         {formatBarcode(code)}
       </AppText>
       <AppText variant="body" color="muted" className="mt-3 text-center">
-        {slow ? 'Still looking. This can take a few seconds.' : 'Looking up this product…'}
+        {slow ? t('Still looking. This can take a few seconds.') : t('Looking up this product…')}
       </AppText>
     </Card>
   )

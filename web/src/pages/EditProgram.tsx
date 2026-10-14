@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, AlertCircle, BookOpen, FileText, Dumbbell, CalendarDays } from 'lucide-react'
 import { programAPI } from '../services/api'
 import { useSettingsStore, weightShort, lbsToDisplay, displayToLbs } from '../stores/settings'
-import { apiErrorMessage, useAsyncAction, hasWorkoutExercises, types } from '@lyftr/shared'
+import { apiErrorMessage, useAsyncAction, hasWorkoutExercises, types, tPlural, t } from '@lyftr/shared'
 import { ErrorState } from '../components/ui'
 import ProgramDaysEditor from '../components/programs/ProgramDaysEditor'
 import type { DayDraft } from '../components/programs/types'
@@ -62,7 +62,7 @@ export default function EditProgram() {
           })),
         })
       })
-      .catch(err => { setLoadError(apiErrorMessage(err, "The server didn't say what went wrong.")); })
+      .catch(err => { setLoadError(apiErrorMessage(err, t("The server didn't say what went wrong."))); })
       .finally(() => setInitialLoading(false))
   }, [id, retryKey])
 
@@ -87,16 +87,16 @@ export default function EditProgram() {
     }
     await programAPI.update(Number(id), payload)
     navigate('/programs')
-  }, 'Failed to update program')
+  }, t('Failed to update program'))
 
   useEffect(() => { if (error || save.error) window.scrollTo({ top: 0, behavior: 'smooth' }) }, [error, save.error])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.name.trim()) { setError('Program name required'); return }
-    if (formData.days.length === 0) { setError('Add at least one day'); return }
+    if (!formData.name.trim()) { setError(t("Program name required")); return }
+    if (formData.days.length === 0) { setError(t("Add at least one day")); return }
     const hasAnyExercise = hasWorkoutExercises(formData.days)
-    if (!hasAnyExercise) { setError('Add at least one exercise to a workout day'); return }
+    if (!hasAnyExercise) { setError(t("Add at least one exercise to a workout day")); return }
     setError('')
     void save.run()
   }
@@ -113,10 +113,10 @@ export default function EditProgram() {
     return (
       <ErrorState
         size="page"
-        title="Couldn't load this program"
+        title={t("Couldn't load this program")}
         message={loadError}
         onRetry={() => { setLoadError(null); setInitialLoading(true); setRetryKey(k => k + 1) }}
-        secondary={<button onClick={() => navigate('/programs')} className="btn-secondary btn-sm">Back to programs</button>}
+        secondary={<button onClick={() => navigate('/programs')} className="btn-secondary btn-sm">{t("Back to programs")}</button>}
       />
     )
   }
@@ -127,13 +127,13 @@ export default function EditProgram() {
   return (
     <div className="space-y-6 animate-slide-up pb-10">
       <div className="flex items-center gap-3">
-        <button aria-label="Go back" onClick={() => navigate(-1)} className="p-2 hover:bg-surface-muted rounded-lg transition-colors">
+        <button aria-label={t("Go back")} onClick={() => navigate(-1)} className="p-2 hover:bg-surface-muted rounded-lg transition-colors">
           <ArrowLeft className="w-5 h-5 text-tx-muted" />
         </button>
         <div>
-          <h1 className="font-display font-bold text-2xl text-tx-primary">Edit Program</h1>
+          <h1 className="font-display font-bold text-2xl text-tx-primary">{t("Edit Program")}</h1>
           <p className="text-xs text-tx-muted">
-            {formData.days.length} day{formData.days.length === 1 ? '' : 's'} • {totalExercises} exercise{totalExercises === 1 ? '' : 's'} • {totalSets} set{totalSets === 1 ? '' : 's'}
+            {tPlural(formData.days.length, '{count} day|{count} days')} • {tPlural(totalExercises, '{count} exercise|{count} exercises')} • {tPlural(totalSets, '{count} set|{count} sets')}
           </p>
         </div>
       </div>
@@ -149,7 +149,7 @@ export default function EditProgram() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <BookOpen className="w-4 h-4 text-brand-500" />
-            <label className="label">Program Name</label>
+            <label className="label">{t("Program Name")}</label>
           </div>
           <input type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="input mt-1" />
         </div>
@@ -157,7 +157,7 @@ export default function EditProgram() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <FileText className="w-4 h-4 text-brand-500" />
-            <label className="label">Notes</label>
+            <label className="label">{t("Notes")}</label>
           </div>
           <textarea value={formData.notes} onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))} className="input mt-1 min-h-16 resize-none" />
         </div>
@@ -166,15 +166,15 @@ export default function EditProgram() {
           <div className="grid grid-cols-3 gap-2 p-3 bg-brand-500/10 border border-brand-500/20 rounded-lg">
             <div className="text-center">
               <div className="text-sm font-bold text-brand-500">{formData.days.length}</div>
-              <div className="text-xs text-tx-muted">Days</div>
+              <div className="text-xs text-tx-muted">{t("Days")}</div>
             </div>
             <div className="text-center">
               <div className="text-sm font-bold text-brand-500">{totalExercises}</div>
-              <div className="text-xs text-tx-muted">Exercises</div>
+              <div className="text-xs text-tx-muted">{t("Exercises")}</div>
             </div>
             <div className="text-center">
               <div className="text-sm font-bold text-brand-500">{totalSets}</div>
-              <div className="text-xs text-tx-muted">Target Sets</div>
+              <div className="text-xs text-tx-muted">{t("Target Sets")}</div>
             </div>
           </div>
         )}
@@ -182,8 +182,8 @@ export default function EditProgram() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <CalendarDays className="w-4 h-4 text-brand-500" />
-            <label className="label">Days</label>
-            <span className="text-xs text-tx-muted">(repeats in this order)</span>
+            <label className="label">{t("Days")}</label>
+            <span className="text-xs text-tx-muted">{t("(repeats in this order)")}</span>
           </div>
           <ProgramDaysEditor
             days={formData.days}
@@ -197,11 +197,11 @@ export default function EditProgram() {
 
         <div className="flex gap-3 pt-2">
           <button type="button" onClick={() => navigate(-1)} className="flex-1 px-4 py-3 bg-surface-muted hover:bg-surface-muted/80 text-tx-secondary rounded-lg transition-colors font-medium">
-            Cancel
+            {t('Cancel')}
           </button>
           <button type="submit" disabled={save.busy} className="flex-1 px-4 py-3 bg-brand-500 hover:bg-brand-600 disabled:opacity-40 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
             <BookOpen className="w-4 h-4" />
-            {save.busy ? 'Saving…' : 'Save Changes'}
+            {save.busy ? t('Saving…') : t('Save Changes')}
           </button>
         </div>
       </form>

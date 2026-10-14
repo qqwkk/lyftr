@@ -7,6 +7,7 @@ import {
   createThemeStore,
   createWorkoutSession,
   surfaces,
+  hydrateLanguage,
 } from '@lyftr/shared'
 import { storage } from './storage'
 
@@ -71,6 +72,7 @@ export const applyThemeClass = (mode: 'light' | 'dark') => {
 // that is actually still running.
 export const hydrateStores = async () => {
   await Promise.all([
+    hydrateLanguage(storage),
     // Auth first among equals — this is the one that MUST be settled before the first
     // render. App.tsx's catch-all route is a <Navigate to="/login">, and <Navigate>
     // performs a history *replace*: rendering while isAuthenticated is still false

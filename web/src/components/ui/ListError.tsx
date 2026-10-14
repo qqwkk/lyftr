@@ -1,4 +1,5 @@
 import ErrorState from './ErrorState'
+import { t } from '@lyftr/shared'
 
 // A page of a list that never arrived.
 //
@@ -20,7 +21,7 @@ export default function ListError(
   return (
     <ErrorState
       size="section"
-      title={`Couldn't load ${subject}`}
+      title={t("Couldn't load {subject}", { subject })}
       message={message}
       onRetry={onRetry}
     />

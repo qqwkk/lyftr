@@ -1,3 +1,4 @@
+import { t } from '@lyftr/shared'
 import { useState } from 'react'
 import { View } from 'react-native'
 import * as Haptics from 'expo-haptics'
@@ -225,7 +226,7 @@ export function MuscleDonut({ data, total, colorFor, size = 160 }: {
       ) : (
         <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
           <AppText variant="bodySemibold" style={{ fontVariant: ['tabular-nums'], color: colors.txMuted }}>{total}</AppText>
-          <AppText variant="caption" color="muted">sets</AppText>
+          <AppText variant="caption" color="muted">{t("sets")}</AppText>
         </View>
       )}
     </View>

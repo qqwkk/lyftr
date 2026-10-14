@@ -1,3 +1,4 @@
+import { t } from '@lyftr/shared'
 import { InputAccessoryView, Keyboard, Platform, Pressable, Text, View } from 'react-native'
 import { useTheme } from '../../theme/useTheme'
 
@@ -16,12 +17,12 @@ export function KeyboardDoneBar({ nativeID }: { nativeID: string }) {
       <View className="flex-row justify-end border-t border-surface-border bg-surface-raised px-5 py-2">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Dismiss keyboard"
+          accessibilityLabel={t("Dismiss keyboard")}
           onPress={() => Keyboard.dismiss()}
           hitSlop={10}
           className="active:opacity-60"
         >
-          <Text className="font-sans-semibold text-sm" style={{ color: accent }}>Done</Text>
+          <Text className="font-sans-semibold text-sm" style={{ color: accent }}>{t("Done")}</Text>
         </Pressable>
       </View>
     </InputAccessoryView>

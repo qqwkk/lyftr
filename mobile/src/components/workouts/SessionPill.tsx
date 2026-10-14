@@ -1,9 +1,9 @@
+import { t, fmtClock, formatElapsed, useElapsedSeconds, tPlural } from '@lyftr/shared'
 import { Pressable, Text, View } from 'react-native'
 import { router, usePathname } from 'expo-router'
 import { ChevronRight, Timer } from 'lucide-react-native'
 import { useSettingsStore, useWorkoutSession } from '../../lib/lyftr'
 import { useRestTimer } from '../../hooks/useRestTimer'
-import { fmtClock, formatElapsed, useElapsedSeconds } from '@lyftr/shared'
 
 // Port of web Layout's ActiveSessionBar — the minimized session pill. Floats above the
 // tab bar on every screen except: the gym overlay (gym layout, open) and the active
@@ -45,11 +45,11 @@ export function SessionPill() {
         </View>
         <View>
           <Text className="font-sans-bold text-xs text-white" numberOfLines={1} style={{ maxWidth: 140 }}>{session.name}</Text>
-          <Text className="text-[11px] text-white/70">{completedSets}/{totalSets} sets · {formatElapsed(elapsed)}</Text>
+          <Text className="text-[11px] text-white/70">{completedSets}/{tPlural(totalSets, '{count} set|{count} sets')} · {formatElapsed(elapsed)}</Text>
         </View>
         {resting ? (
           <View className="flex-row items-center gap-1.5 rounded-full bg-white/15 py-1 pl-2.5 pr-1">
-            <Text className="text-[10px] font-sans-semibold uppercase text-white/70">{done ? 'Rest over' : paused ? 'Paused' : 'Rest'}</Text>
+            <Text className="text-[10px] font-sans-semibold uppercase text-white/70">{done ? t('Rest over') : paused ? t('Paused') : t('Rest')}</Text>
             {!done ? <Text className="font-sans-bold text-xs text-white" style={{ fontVariant: ['tabular-nums'] }}>{fmtClock(left)}</Text> : null}
           </View>
         ) : null}

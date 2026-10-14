@@ -1,3 +1,5 @@
+import { t } from '../i18n'
+
 // Format whole seconds as m:ss (e.g. 90 → "1:30"). Shared by the rest banner and
 // the minimized session-pill chip.
 export function fmtClock(totalSeconds: number): string {
@@ -26,7 +28,9 @@ export function formatElapsed(seconds: number): string {
 
 // Rest interval as a compact label: whole minutes collapse to "2m", anything else
 // stays in seconds ("90s"). Shown on program and workout set rows.
-export const restLabel = (s: number): string => (s % 60 === 0 && s >= 60 ? `${s / 60}m` : `${s}s`)
+export const restLabel = (s: number): string => (s % 60 === 0 && s >= 60
+  ? t('{count}m', { count: s / 60 })
+  : t('{count}s', { count: s }))
 
 // "8", "8–12", or an em dash when there's nothing to show. Used for the planned
 // reps/weight spread across an exercise's sets in gym mode.

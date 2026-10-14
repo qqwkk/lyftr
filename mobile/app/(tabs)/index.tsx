@@ -9,7 +9,7 @@ import {
 import {
   Activity, ArrowRight, BookOpen, ChevronRight, Dumbbell, Play, Plus, Scale, Timer, TrendingUp,
 } from 'lucide-react-native'
-import { apiErrorMessage, isDailyStats, activeSessionExercisesForDay, dayLabel, displayVolume, displayWeight, sessionNameForDay, weightShort, type DailyStats, type Program, type WeightLog, type WeightStats, type Workout, workoutDay, entryDay, nextStartableDay, muscleRoast, muscleHex, calcVolume, greeting, formatDay } from '@lyftr/shared'
+import { apiErrorMessage, isDailyStats, activeSessionExercisesForDay, dayLabel, displayVolume, displayWeight, sessionNameForDay, weightShort, type DailyStats, type Program, type WeightLog, type WeightStats, type Workout, workoutDay, entryDay, nextStartableDay, muscleRoast, muscleHex, calcVolume, greeting, formatDay, t, tPlural, formatLocalized } from '@lyftr/shared'
 import { AppText, Card, ErrorState, IconButton, Label, Screen, SectionHeader, SegmentedControl } from '../../src/components/ui'
 import { ExerciseImage } from '../../src/components/workouts/ExerciseImage'
 import {
@@ -122,7 +122,7 @@ export default function Dashboard() {
     }
     const absent: Record<string, string> = {}
     const note = (what: string, err: unknown) => {
-      absent[what] = apiErrorMessage(err, "The server didn't say what went wrong.")
+      absent[what] = apiErrorMessage(err, t("The server didn't say what went wrong."))
     }
     const [ws, ps, fs, wl, wst] = await Promise.all([
       // Uncaught on purpose, mirroring web: this is the primary request, and it is
@@ -150,7 +150,7 @@ export default function Dashboard() {
   useEffect(() => {
     fetchSettings()
     load()
-      .catch((err) => setError(apiErrorMessage(err, "The server didn't say what went wrong.")))
+      .catch((err) => setError(apiErrorMessage(err, t("The server didn't say what went wrong."))))
       .finally(() => setLoading(false))
   }, [fetchSettings, load])
 
@@ -185,12 +185,12 @@ export default function Dashboard() {
       <Screen>
         <ErrorState
           size="page"
-          title="Couldn't load your dashboard"
+          title={t("Couldn't load your dashboard")}
           message={error}
           onRetry={() => {
             setError(null)
             setLoading(true)
-            load().catch((err) => setError(apiErrorMessage(err, "The server didn't say what went wrong."))).finally(() => setLoading(false))
+            load().catch((err) => setError(apiErrorMessage(err, t("The server didn't say what went wrong.")))).finally(() => setLoading(false))
           }}
         />
       </Screen>
@@ -239,9 +239,9 @@ export default function Dashboard() {
   const heatmapWeeks: Date[][] = []
   for (let i = 0; i < heatmapDays.length; i += 7) heatmapWeeks.push(heatmapDays.slice(i, i + 7))
   const monthLabels: (string | null)[] = heatmapWeeks.map((week, i) => {
-    const m = format(week[0], 'MMM')
+    const m = formatLocalized(week[0], 'MMM')
     if (i === 0) return m
-    return m !== format(heatmapWeeks[i - 1][0], 'MMM') ? m : null
+    return m !== formatLocalized(heatmapWeeks[i - 1][0], 'MMM') ? m : null
   })
 
   const muscleMap = new Map<string, number>()
@@ -293,7 +293,7 @@ export default function Dashboard() {
           <View className="flex-row items-start justify-between gap-3">
             <View className="min-w-0 flex-1">
               <Text className="font-sans-medium text-[11px] uppercase text-tx-muted" style={{ letterSpacing: 1 }}>
-                {format(now, 'EEEE, MMMM d')}
+                {formatLocalized(now, 'EEEE, MMMM d')}
               </Text>
               <AppText variant="title" className="mt-0.5" numberOfLines={1}>{greeting(now)}, {username}</AppText>
             </View>
@@ -303,12 +303,12 @@ export default function Dashboard() {
                 className="flex-row items-center gap-1.5 rounded-xl bg-brand-500 px-4 py-2.5 active:scale-95"
               >
                 <Play size={15} color="#fff" />
-                <Text className="font-sans-bold text-sm text-white">{session ? 'Resume' : 'Start'}</Text>
+                <Text className="font-sans-bold text-sm text-white">{session ? t('Resume') : t('Start')}</Text>
               </Pressable>
               {/* Avatar → Settings. Settings moved off the footer; this is its entry point. */}
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Settings"
+                accessibilityLabel={t("Settings")}
                 onPress={() => { hSelect(); router.navigate('/settings') }}
                 hitSlop={6}
                 className="active:scale-95"
@@ -336,8 +336,8 @@ export default function Dashboard() {
                   <Timer size={18} color={brand.warningSoft} />
                 </View>
                 <View>
-                  <AppText variant="bodySemibold" color="warning">Workout in progress</AppText>
-                  <Text className="text-xs" style={{ color: brand.warningSoft, opacity: 0.7 }}>{session.name} — tap to resume</Text>
+                  <AppText variant="bodySemibold" color="warning">{t("Workout in progress")}</AppText>
+                  <Text className="text-xs" style={{ color: brand.warningSoft, opacity: 0.7 }}>{session.name} {t("— tap to resume")}</Text>
                 </View>
               </View>
               <ArrowRight size={18} color={brand.warningSoft} />
@@ -356,18 +356,18 @@ export default function Dashboard() {
             <Card className="flex-row items-center gap-3">
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`View ${upNext.program.name} routine`}
+                accessibilityLabel={t('View {program} routine', { program: upNext.program.name })}
                 onPress={() => { hSelect(); router.navigate(`/programs/${upNext.program.id}`) }}
                 className="min-w-0 flex-1 flex-row items-center gap-3 active:opacity-70"
               >
                 <ExerciseImage url={upNext.day.exercises?.[0]?.exercise?.image_url} fallbackIcon={BookOpen} />
                 <View className="min-w-0 flex-1">
-                  <Label>Up next · {upNext.program.name}</Label>
+                  <Label>{t("Up next ·")} {upNext.program.name}</Label>
                   <Text className="mt-0.5 font-sans-semibold text-sm text-tx-primary" numberOfLines={1}>
                     {dayLabel(upNext.day, upNext.day.order_index)}
                   </Text>
                   <AppText variant="caption" color="muted" className="mt-0.5">
-                    {(upNext.day.exercises ?? []).length} exercise{(upNext.day.exercises ?? []).length === 1 ? '' : 's'}
+                    {tPlural((upNext.day.exercises ?? []).length, '{count} exercise|{count} exercises')}
                   </AppText>
                 </View>
                 <ChevronRight size={16} color={colors.txMuted} />
@@ -385,7 +385,7 @@ export default function Dashboard() {
             // here the screen reads as an account with no routine, which is a claim we
             // cannot make from a request that never answered.
             <Card>
-              <ErrorState title="Couldn't load your programs" message={missing['your programs']} onRetry={onRefresh} />
+              <ErrorState title={t("Couldn't load your programs")} message={missing['your programs']} onRetry={onRefresh} />
             </Card>
           ) : null}
 
@@ -393,7 +393,7 @@ export default function Dashboard() {
           <Card>
             <View className="flex-row items-start justify-between">
               <View>
-                <Label>This Week</Label>
+                <Label>{t("This Week")}</Label>
                 <View className="mt-1 flex-row items-end gap-1.5">
                   <AppText variant="display" style={{ fontSize: 34, lineHeight: 38, fontVariant: ['tabular-nums'] }}>{weekWorkouts.length}</AppText>
                   <AppText variant="caption" color="muted" className="mb-2">{weekWorkouts.length === 1 ? 'session' : 'sessions'}</AppText>
@@ -410,7 +410,7 @@ export default function Dashboard() {
                 const isFuture = day > now
                 return (
                   <View key={i} className="items-center gap-1.5">
-                    <AppText variant="label" color={isToday ? 'brand' : 'muted'} className="text-[10px]">{format(day, 'EEEEE')}</AppText>
+                    <AppText variant="label" color={isToday ? 'brand' : 'muted'} className="text-[10px]">{formatLocalized(day, 'EEEEE')}</AppText>
                     <View className={`h-3.5 w-3.5 rounded-full ${
                       hasWorkout ? 'bg-brand-500' : isToday ? 'border-2 border-brand-500/60' : isFuture ? 'bg-surface-border/20' : 'bg-surface-border/60'
                     }`} />
@@ -424,14 +424,14 @@ export default function Dashboard() {
           <Card>
             <SectionHeader
               icon={TrendingUp}
-              title="Volume Trend"
+              title={t("Volume Trend")}
               right={<View style={{ width: 132 }}><SegmentedControl size="sm" options={VOL_OPTIONS} value={volumePeriod} onChange={setVolumePeriod} /></View>}
               className="mb-3"
             />
             {chartData.length === 0 ? (
               <View className="items-center justify-center gap-2 py-10">
                 <Dumbbell size={26} color={colors.txMuted} style={{ opacity: 0.4 }} />
-                <AppText variant="caption" color="muted">Log workouts to see trends</AppText>
+                <AppText variant="caption" color="muted">{t("Log workouts to see trends")}</AppText>
               </View>
             ) : (
               <View onLayout={(e) => setChartWidth(e.nativeEvent.layout.width)}>
@@ -444,13 +444,13 @@ export default function Dashboard() {
           <Card>
             <SectionHeader
               icon={Activity}
-              title="Consistency"
-              right={<AppText variant="caption" color="muted">12 weeks</AppText>}
+              title={t("Consistency")}
+              right={<AppText variant="caption" color="muted">{t("12 weeks")}</AppText>}
               className="mb-3"
             />
             {workouts.length === 0 ? (
               <View className="items-center justify-center gap-2 py-6">
-                <AppText variant="caption" color="muted">Start working out to build your streak</AppText>
+                <AppText variant="caption" color="muted">{t("Start working out to build your streak")}</AppText>
               </View>
             ) : (
               <>
@@ -464,9 +464,9 @@ export default function Dashboard() {
                 </View>
                 <View className="flex-row" style={{ gap: 2 }}>
                   <View style={{ width: 14, gap: 2 }}>
-                    {(['M', '', 'W', '', 'F', '', 'S'] as const).map((lbl, di) => (
+                    {([0, 1, 2, 3, 4, 5, 6] as const).map((di) => (
                       <View key={di} className="h-3 justify-center">
-                        <Text className="text-[9px] text-tx-muted/60">{lbl}</Text>
+                        <Text className="text-[9px] text-tx-muted/60">{di % 2 === 0 ? formatLocalized(heatmapWeeks[0][di], 'EEEEE') : ''}</Text>
                       </View>
                     ))}
                   </View>
@@ -496,15 +496,15 @@ export default function Dashboard() {
                 </View>
                 {heatSel ? (
                   <AppText variant="caption" color="muted" className="mt-1.5">
-                    {format(heatSel.day, 'MMM d')}{heatSel.count > 0 ? ` · ${heatSel.count} workout${heatSel.count > 1 ? 's' : ''}` : ' · rest day'}
+                    {formatLocalized(heatSel.day, 'MMM d')}{heatSel.count > 0 ? ` · ${tPlural(heatSel.count, '{count} workout|{count} workouts')}` : t(' · rest day')}
                   </AppText>
                 ) : null}
                 <View className="mt-2 flex-row items-center justify-end gap-1.5">
-                  <Text className="text-[9px] text-tx-muted">Less</Text>
+                  <Text className="text-[9px] text-tx-muted">{t("Less")}</Text>
                   {[colors.border, isDark ? brand.cyanEdge : brand.cyan, isDark ? brand.cyanLight : brand.cyanEdge].map((c, i) => (
                     <View key={i} style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: c }} />
                   ))}
-                  <Text className="text-[9px] text-tx-muted">More</Text>
+                  <Text className="text-[9px] text-tx-muted">{t("More")}</Text>
                 </View>
               </>
             )}
@@ -521,7 +521,7 @@ export default function Dashboard() {
                 <Card>
                   <View className="mb-3 flex-row items-start justify-between gap-2">
                     <View className="min-w-0 flex-1">
-                      <Label className="mb-1">Last workout</Label>
+                      <Label className="mb-1">{t("Last workout")}</Label>
                       <Text className="font-sans-semibold text-base text-tx-primary" numberOfLines={1}>{lastWorkout.name}</Text>
                       <AppText variant="caption" color="muted" className="mt-0.5">
                         {formatDay(workoutDay(lastWorkout), 'MMM d')}
@@ -530,7 +530,7 @@ export default function Dashboard() {
                         {totalVolume > 0 ? ` · ${totalVolume.toLocaleString()} ${wUnit}` : ''}
                       </AppText>
                     </View>
-                    <LinkRow label="All" onPress={() => router.navigate('/workouts')} />
+                    <LinkRow label={t("All")} onPress={() => router.navigate('/workouts')} />
                   </View>
                   <View className="gap-2.5">
                     {exs.slice(0, 4).map((ex, i) => {
@@ -545,7 +545,7 @@ export default function Dashboard() {
                           </View>
                           {best ? (
                             <Text className="text-xs text-tx-muted" style={{ fontVariant: ['tabular-nums'] }}>
-                              {sets.length}×{best.weight > 0 ? ` ${displayWeight(best.weight, unit)}${wUnit}` : ' BW'}
+                              {sets.length}×{best.weight > 0 ? ` ${displayWeight(best.weight, unit)}${wUnit}` : ` ${t('BW')}`}
                             </Text>
                           ) : null}
                         </View>
@@ -553,7 +553,7 @@ export default function Dashboard() {
                     })}
                   </View>
                   {exs.length > 4 ? (
-                    <AppText variant="caption" color="muted" className="pt-2 text-center">+{exs.length - 4} more exercises</AppText>
+                    <AppText variant="caption" color="muted" className="pt-2 text-center">+{exs.length - 4} {t("more exercises")}</AppText>
                   ) : null}
                 </Card>
               </Pressable>
@@ -561,14 +561,14 @@ export default function Dashboard() {
           })() : (
             <Card className="items-center justify-center gap-2" style={{ minHeight: 148 }}>
               <Dumbbell size={30} color={colors.txMuted} style={{ opacity: 0.4 }} />
-              <AppText variant="body" color="muted">No workouts logged yet</AppText>
+              <AppText variant="body" color="muted">{t("No workouts logged yet")}</AppText>
               {/* Suppressed when the Up Next card is already showing above — that
                   card is its own "start something" CTA, and stacking a second
                   "start your first workout" link right under it is the exact
                   redundant-buttons clutter this card exists to avoid. */}
               {!upNext ? (
                 <Pressable onPress={() => { hSelect(); router.navigate('/workouts/start') }} hitSlop={6} className="active:opacity-60">
-                  <AppText variant="caption" color="brand">Start your first workout →</AppText>
+                  <AppText variant="caption" color="brand">{t("Start your first workout →")}</AppText>
                 </Pressable>
               ) : null}
             </Card>
@@ -578,19 +578,19 @@ export default function Dashboard() {
           <Card>
             <SectionHeader
               icon={Dumbbell}
-              title="Muscle Balance"
-              right={<AppText variant="caption" color="muted">{workouts.length} workouts</AppText>}
+              title={t("Muscle Balance")}
+              right={<AppText variant="caption" color="muted">{tPlural(workouts.length, '{count} workout|{count} workouts')}</AppText>}
               className="mb-1"
             />
             {topMuscle ? (
               <AppText variant="caption" color="muted" className="mb-3 italic">{muscleRoast(topMuscle)}</AppText>
             ) : (
-              <AppText variant="caption" color="muted" className="mb-3">Log workouts to see which muscles you train most.</AppText>
+              <AppText variant="caption" color="muted" className="mb-3">{t("Log workouts to see which muscles you train most.")}</AppText>
             )}
             {muscleData.length === 0 ? (
               <View className="items-center justify-center gap-2 py-6">
                 <Dumbbell size={26} color={colors.txMuted} style={{ opacity: 0.3 }} />
-                <AppText variant="caption" color="muted">No workout data yet</AppText>
+                <AppText variant="caption" color="muted">{t("No workout data yet")}</AppText>
               </View>
             ) : (
               <View className="items-center gap-4">
@@ -606,7 +606,7 @@ export default function Dashboard() {
                         <View className="mb-0.5 flex-row items-center gap-2">
                           <View className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
                           <Text className={`flex-1 text-xs capitalize ${isTop ? 'font-sans-semibold text-tx-primary' : 'text-tx-secondary'}`} numberOfLines={1}>
-                            {d.name}{isTop ? <Text className="text-[9px] uppercase text-tx-muted"> top</Text> : null}
+                            {d.name}{isTop ? <Text className="text-[9px] uppercase text-tx-muted"> {t("top")}</Text> : null}
                           </Text>
                           <MuscleSparkline values={values} color={color} isTop={isTop} />
                           <Text className="w-16 text-right text-xs text-tx-muted" style={{ fontVariant: ['tabular-nums'] }}>{d.value} · {pct}%</Text>
@@ -623,29 +623,29 @@ export default function Dashboard() {
           {/* ── Today's Nutrition (also covers the Cals/Protein once in the KPI strip) ── */}
           <Card>
             {/* Web links "Log →" to /food; hidden on mobile until a Food page exists. */}
-            <AppText variant="subheading" className="mb-3">Today's Nutrition</AppText>
+            <AppText variant="subheading" className="mb-3">{t("Today's Nutrition")}</AppText>
             {foodMissing ? (
-              <ErrorState title="Couldn't load today's food" message={missing["today's food"]} onRetry={onRefresh} />
+              <ErrorState title={t("Couldn't load today's food")} message={missing["today's food"]} onRetry={onRefresh} />
             ) : (
             <>
             <View className="mb-3 flex-row items-baseline gap-1.5">
               <Text className="font-display-heavy text-tx-primary" style={{ fontSize: 34, lineHeight: 38, fontVariant: ['tabular-nums'] }}>{Math.round(food.total_calories)}</Text>
-              <AppText variant="caption" color="muted">/ {settings.calorie_target} kcal</AppText>
+              <AppText variant="caption" color="muted">/ {settings.calorie_target} {t("kcal")}</AppText>
               <View className="flex-1" />
               <AppText variant="caption" color="muted" style={{ fontVariant: ['tabular-nums'] }}>{Math.round(calPct)}%</AppText>
             </View>
             <ProgressBar pct={calPct} color="#00b8d9" className="mb-4" />
             <View className="gap-3">
               {[
-                { label: 'Protein', val: food.total_protein, target: settings.protein_target, pct: protPct, color: '#3b82f6' },
-                { label: 'Carbs', val: food.total_carbs, target: settings.carb_target, pct: carbsPct, color: '#f59e0b' },
-                { label: 'Fat', val: food.total_fat, target: settings.fat_target, pct: fatPct, color: '#8b5cf6' },
+                { label: t('Protein'), val: food.total_protein, target: settings.protein_target, pct: protPct, color: '#3b82f6' },
+                { label: t('Carbs'), val: food.total_carbs, target: settings.carb_target, pct: carbsPct, color: '#f59e0b' },
+                { label: t('Fat'), val: food.total_fat, target: settings.fat_target, pct: fatPct, color: '#8b5cf6' },
               ].map((m) => (
                 <View key={m.label}>
                   <View className="mb-1 flex-row items-center justify-between">
                     <AppText variant="caption" color="muted">{m.label}</AppText>
                     <Text className="text-xs font-sans-semibold text-tx-primary" style={{ fontVariant: ['tabular-nums'] }}>
-                      {Math.round(m.val)}g<Text className="font-sans font-normal text-tx-muted"> / {m.target}g</Text>
+                      {Math.round(m.val)}{t("g")}<Text className="font-sans font-normal text-tx-muted"> / {m.target}{t("g")}</Text>
                     </Text>
                   </View>
                   <ProgressBar pct={m.pct} color={m.color} />
@@ -660,13 +660,13 @@ export default function Dashboard() {
           <Card>
             <SectionHeader
               icon={Scale}
-              title="Weight"
-              right={<LinkRow label="View" onPress={() => router.navigate('/weight')} />}
+              title={t("Weight")}
+              right={<LinkRow label={t("View")} onPress={() => router.navigate('/weight')} />}
               className="mb-2"
             />
             {weightLogs.length === 0 && weightMissing ? (
               // Not the "log your first weight" prompt: this reader may have years of them.
-              <ErrorState title="Couldn't load your weight" message={missing['your weight']} onRetry={onRefresh} />
+              <ErrorState title={t("Couldn't load your weight")} message={missing['your weight']} onRetry={onRefresh} />
             ) : weightLogs.length === 0 ? (
               <Pressable
                 onPress={() => { hSelect(); setSheetOpen(true) }}
@@ -676,12 +676,12 @@ export default function Dashboard() {
                   <Plus size={18} color={accent} />
                 </View>
                 <View>
-                  <Text className="text-sm font-sans-semibold text-tx-primary">Log your first weight</Text>
-                  <AppText variant="caption" color="muted">Tap to start tracking</AppText>
+                  <Text className="text-sm font-sans-semibold text-tx-primary">{t("Log your first weight")}</Text>
+                  <AppText variant="caption" color="muted">{t("Tap to start tracking")}</AppText>
                 </View>
               </Pressable>
             ) : (
-              <Pressable onPress={() => { hSelect(); setSheetOpen(true) }} className="active:scale-[0.99]" accessibilityLabel="Log weight">
+              <Pressable onPress={() => { hSelect(); setSheetOpen(true) }} className="active:scale-[0.99]" accessibilityLabel={t("Log weight")}>
                 <View className="mb-2 flex-row items-center justify-between">
                   <View className="flex-row items-baseline gap-1.5">
                     <AppText variant="display" style={{ fontSize: 30, lineHeight: 34, fontVariant: ['tabular-nums'] }}>{displayWeight(weightLogs[0].weight, unit)}</AppText>
@@ -693,10 +693,10 @@ export default function Dashboard() {
                       // never got — and a null or absent delta is no stats at all, not 0.
                       const delta = weightStats?.change_7d
                       if (typeof delta !== 'number' || !Number.isFinite(delta)) return null
-                      if (delta === 0) return <AppText variant="caption" color="muted">7d · no change</AppText>
+                      if (delta === 0) return <AppText variant="caption" color="muted">{t("7d · no change")}</AppText>
                       return (
                         <Text className="text-xs" style={{ color: delta < 0 ? brand.successSoft : brand.errorSoft, fontVariant: ['tabular-nums'] }}>
-                          7d · {delta < 0 ? '↓' : '↑'}{Math.abs(displayWeight(delta, unit))} {wUnit}
+                          {t("7d ·")} {delta < 0 ? '↓' : '↑'}{Math.abs(displayWeight(delta, unit))} {wUnit}
                         </Text>
                       )
                     })()}

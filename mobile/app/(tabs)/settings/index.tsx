@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { t, useLanguage, setLanguage, type Language, useAsyncAction, memberSince, normalizeServerUrl, testServerConnection, isInsecureServerUrl, INSECURE_SERVER_WARNING, sanitizeNumericInput } from '@lyftr/shared'
+import { storage } from '../../../src/lib/storage'
 import { Pressable, ScrollView, View } from 'react-native'
 import { router } from 'expo-router'
 import {
@@ -8,6 +10,7 @@ import {
   AlertTriangle,
   Dumbbell,
   KeyRound,
+  Languages,
   LogOut,
   Mail,
   Minus,
@@ -18,14 +21,6 @@ import {
   Timer,
   Trash2,
 } from 'lucide-react-native'
-import { useAsyncAction,
-  memberSince,
-  normalizeServerUrl,
-  testServerConnection,
-  isInsecureServerUrl,
-  INSECURE_SERVER_WARNING,
-  sanitizeNumericInput,
-} from '@lyftr/shared'
 import {
   AppText,
   Button,
@@ -53,6 +48,13 @@ const REST_PRESETS = [60, 90, 120, 180]
 type ToastState = { variant: ToastVariant; title: string; description?: string }
 
 export default function SettingsScreen() {
+  const language = useLanguage()
+  const [languageError, setLanguageError] = useState<string | null>(null)
+  const changeLanguage = async (next: Language) => {
+    setLanguageError(null)
+    try { await setLanguage(next, storage) }
+    catch { setLanguageError(t('Could not change language')) }
+  }
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
   const serverUrl = useServerStore((s) => s.serverUrl)
@@ -123,8 +125,8 @@ export default function SettingsScreen() {
       carb_target: parseInt(targets.carb_target) || 0,
       fat_target: parseInt(targets.fat_target) || 0,
     })
-    setToast({ variant: 'success', title: 'Targets saved' })
-  }, 'Could not save targets')
+    setToast({ variant: 'success', title: t('Targets saved') })
+  }, t('Could not save targets'))
 
   const handleSaveTargets = () => { void saveTargets.run() }
 
@@ -134,14 +136,14 @@ export default function SettingsScreen() {
   // back now; this is what says why.
   const changeUnit = useAsyncAction(async (unit: 'lbs' | 'kg') => {
     await updateSettings({ weight_unit: unit })
-  }, 'Could not change the weight unit')
+  }, t('Could not change the weight unit'))
 
   const saveServer = async () => {
     setTesting(true)
     setServerMsg(null)
     const base = normalizeServerUrl(urlInput)
     if (urlInput.trim() && !base) {
-      setServerMsg('Enter a full URL including http:// or https://')
+      setServerMsg(t('Enter a full URL including http:// or https://'))
       setTesting(false)
       return
     }
@@ -157,23 +159,23 @@ export default function SettingsScreen() {
     // logout flips isAuthenticated; the root layout's Stack.Protected guard then makes
     // (tabs) unreachable and expo-router moves the user to sign-in. Nothing routes by hand.
     await logout()
-  }, 'Could not delete account')
+  }, t('Could not delete account'))
 
   // These two report through the toast rather than an inline alert, so the message is
   // read off the hook when it changes. It used to be `err?.message`, which for an axios
   // error is the string "Request failed with status code 400" - true, and useless.
   useEffect(() => {
-    if (saveTargets.error) setToast({ variant: 'error', title: 'Could not save targets', description: saveTargets.error })
+    if (saveTargets.error) setToast({ variant: 'error', title: t('Could not save targets'), description: saveTargets.error })
   }, [saveTargets.error])
 
   useEffect(() => {
-    if (changeUnit.error) setToast({ variant: 'error', title: 'Could not change units', description: changeUnit.error })
+    if (changeUnit.error) setToast({ variant: 'error', title: t('Could not change units'), description: changeUnit.error })
   }, [changeUnit.error])
 
   useEffect(() => {
     if (deleteAccount.error) {
       setConfirmDelete(false)
-      setToast({ variant: 'error', title: 'Could not delete account', description: deleteAccount.error })
+      setToast({ variant: 'error', title: t('Could not delete account'), description: deleteAccount.error })
     }
   }, [deleteAccount.error])
 
@@ -191,19 +193,22 @@ export default function SettingsScreen() {
               className="flex-row items-center gap-1.5 self-start active:opacity-60"
             >
               <ArrowLeft size={16} color={colors.txMuted} />
-              <AppText variant="body" color="muted">Home</AppText>
+              <AppText variant="body" color="muted">{t('Home')}</AppText>
             </Pressable>
-            <PageHeader title="Settings" subtitle="Preferences and account configuration" />
+            <PageHeader title={t('Settings')} subtitle={t('Preferences and account configuration')} />
           </View>
 
           {/* Account */}
-          <SettingsGroup title="Account">
-            <SettingsRow icon={Mail} label="Email" value={user?.email ?? '—'} />
-            <SettingsRow icon={CalendarDays} label="Member since" value={memberSince(user?.created_at)} divider />
+          <SettingsGroup title={t("Account")}>
+            <SettingsRow icon={Languages} label={t('Language')} description={languageError ?? t('Choose the language used throughout the app')}
+              below={<SegmentedControl value={language} onChange={(next) => { void changeLanguage(next) }}
+                options={[{ value: 'ru', label: 'Русский' }, { value: 'en', label: 'English' }]} />} />
+            <SettingsRow icon={Mail} label={t("Email")} value={user?.email ?? '—'} />
+            <SettingsRow icon={CalendarDays} label={t("Member since")} value={memberSince(user?.created_at)} divider />
             <SettingsRow
               icon={KeyRound}
-              label="Password"
-              description="Changing it signs you out on your other devices"
+              label={t("Password")}
+              description={t("Changing it signs you out on your other devices")}
               divider
               chevron
               onPress={() => router.push('/settings/password')}
@@ -211,44 +216,44 @@ export default function SettingsScreen() {
           </SettingsGroup>
 
           {/* Appearance */}
-          <SettingsGroup title="Appearance">
+          <SettingsGroup title={t("Appearance")}>
             <SettingsRow
               icon={Moon}
-              label="Dark mode"
-              description="Use the dark color scheme"
+              label={t("Dark mode")}
+              description={t("Use the dark color scheme")}
               right={
                 <Toggle
                   value={mode === 'dark'}
                   onValueChange={(on) => setMode(on ? 'dark' : 'light')}
-                  accessibilityLabel="Dark mode"
+                  accessibilityLabel={t("Dark mode")}
                 />
               }
             />
           </SettingsGroup>
 
           {/* Workout */}
-          <SettingsGroup title="Workout" footnote="Default rest seeds new exercises · a per-exercise rest overrides it.">
+          <SettingsGroup title={t("Workout")} footnote={t("Default rest seeds new exercises · a per-exercise rest overrides it.")}>
             <SettingsRow
               icon={Dumbbell}
-              label="Default workout view"
+              label={t("Default workout view")}
               below={
                 <SegmentedControl
                   value={settings.workout_layout ?? 'list'}
                   onChange={setWorkoutLayout}
                   options={[
-                    { value: 'list', label: 'List' },
-                    { value: 'gym', label: 'Gym Mode' },
+                    { value: 'list', label: t('List') },
+                    { value: 'gym', label: t('Gym Mode') },
                   ]}
                 />
               }
             />
             <SettingsRow
               icon={Timer}
-              label="Rest timer"
-              description="Auto-start a countdown between sets"
+              label={t("Rest timer")}
+              description={t("Auto-start a countdown between sets")}
               divider
               right={
-                <Toggle value={restEnabled} onValueChange={setRestEnabled} accessibilityLabel="Rest timer" />
+                <Toggle value={restEnabled} onValueChange={setRestEnabled} accessibilityLabel={t("Rest timer")} />
               }
             />
             {/* Dependent sub-setting: shown but dimmed + inert when the timer is off (the value
@@ -256,7 +261,7 @@ export default function SettingsScreen() {
             <View pointerEvents={restEnabled ? 'auto' : 'none'} style={{ opacity: restEnabled ? 1 : 0.4 }}>
               <SettingsRow
                 icon={Clock}
-                label="Default rest"
+                label={t("Default rest")}
                 divider
                 below={
                   <View className="gap-3">
@@ -272,14 +277,14 @@ export default function SettingsScreen() {
                       }}
                       options={[
                         ...REST_PRESETS.map((s) => ({ value: String(s), label: `${s}s` })),
-                        { value: 'custom', label: restIsCustom ? `${restCur}s` : 'Custom' },
+                        { value: 'custom', label: restIsCustom ? `${restCur}s` : t('Custom') },
                       ]}
                     />
                     {restCustomActive ? (
                       <View className="flex-row items-center justify-center gap-3">
                         <IconButton
                           icon={Minus}
-                          label="Decrease rest by 5 seconds"
+                          label={t("Decrease rest by 5 seconds")}
                           variant="secondary"
                           size="md"
                           onPress={() => setRestSeconds(Math.max(0, restCur - 5))}
@@ -291,13 +296,13 @@ export default function SettingsScreen() {
                               value={String(restCur)}
                               onChange={(v) => setRestSeconds(Math.max(0, Math.min(3600, Number(v) || 0)))}
                               inputMode="numeric"
-                              accessibilityLabel="Custom rest seconds"
+                              accessibilityLabel={t("Custom rest seconds")}
                             />
                           </View>
                         </View>
                         <IconButton
                           icon={Plus}
-                          label="Increase rest by 5 seconds"
+                          label={t("Increase rest by 5 seconds")}
                           variant="secondary"
                           size="md"
                           onPress={() => setRestSeconds(Math.min(3600, restCur + 5))}
@@ -316,19 +321,19 @@ export default function SettingsScreen() {
               2000/150/250/65 so the rest of the app keeps working, and Save would PUT
               those straight over the user's real targets. */}
           {settingsLoadFailed ? (
-            <SettingsGroup title="Units & Targets">
+            <SettingsGroup title={t("Units & Targets")}>
               <ErrorState
                 size="section"
-                title="Couldn't load your goals"
-                message="These are your saved targets and units, so we won't guess at them. Everything else here still works."
+                title={t("Couldn't load your goals")}
+                message={t("These are your saved targets and units, so we won't guess at them. Everything else here still works.")}
                 onRetry={() => { void fetchSettings() }}
               />
             </SettingsGroup>
           ) : (
-          <SettingsGroup title="Units & Targets" footnote="Weight unit applies instantly across the app. Nutrition targets power the dashboard rings.">
+          <SettingsGroup title={t("Units & Targets")} footnote={t("Weight unit applies instantly across the app. Nutrition targets power the dashboard rings.")}>
             <SettingsRow
               icon={Scale}
-              label="Weight unit"
+              label={t("Weight unit")}
               below={
                 <SegmentedControl
                   value={settings.weight_unit}
@@ -342,43 +347,43 @@ export default function SettingsScreen() {
             />
             <View className="gap-3 border-t border-surface-border py-4">
               <Field
-                label="Calorie target"
+                label={t("Calorie target")}
                 keyboardType="number-pad"
                 value={targets.calorie_target}
                 onChangeText={onDigits('calorie_target')}
-                rightSlot={<Muted className="text-xs">kcal</Muted>}
+                rightSlot={<Muted className="text-xs">{t("kcal")}</Muted>}
               />
               <Field
-                label="Protein target"
+                label={t("Protein target")}
                 keyboardType="number-pad"
                 value={targets.protein_target}
                 onChangeText={onDigits('protein_target')}
-                rightSlot={<Muted className="text-xs">g</Muted>}
+                rightSlot={<Muted className="text-xs">{t("g")}</Muted>}
               />
               <Field
-                label="Carb target"
+                label={t("Carb target")}
                 keyboardType="number-pad"
                 value={targets.carb_target}
                 onChangeText={onDigits('carb_target')}
-                rightSlot={<Muted className="text-xs">g</Muted>}
+                rightSlot={<Muted className="text-xs">{t("g")}</Muted>}
               />
               <Field
-                label="Fat target"
+                label={t("Fat target")}
                 keyboardType="number-pad"
                 value={targets.fat_target}
                 onChangeText={onDigits('fat_target')}
-                rightSlot={<Muted className="text-xs">g</Muted>}
+                rightSlot={<Muted className="text-xs">{t("g")}</Muted>}
               />
-              <Button title="Save targets" onPress={handleSaveTargets} loading={saveTargets.busy} className="mt-1" />
+              <Button title={t("Save targets")} onPress={handleSaveTargets} loading={saveTargets.busy} className="mt-1" />
             </View>
           </SettingsGroup>
           )}
 
           {/* Server */}
-          <SettingsGroup title="Server" footnote="The self-hosted backend this app talks to. Leave the URL blank to use the default.">
+          <SettingsGroup title={t("Server")} footnote={t("The self-hosted backend this app talks to. Leave the URL blank to use the default.")}>
             <SettingsRow
               icon={Server}
-              label="Backend"
+              label={t("Backend")}
               right={
                 <View className="max-w-[60%] flex-row items-center gap-2">
                   {/* Amber, not green, whenever traffic leaves the device unencrypted (#79). */}
@@ -386,20 +391,20 @@ export default function SettingsScreen() {
                     ? <AlertTriangle size={13} color={brand.warning} strokeWidth={2.4} />
                     : <View className="h-1.5 w-1.5 rounded-full bg-success-500" />}
                   <AppText variant="body" color={insecureServer ? 'warning' : 'muted'} numberOfLines={1}>
-                    {serverUrl || 'Default backend'}
+                    {serverUrl || t('Default backend')}
                   </AppText>
                 </View>
               }
             />
             <View className="border-t border-surface-border py-4">
               <Field
-                label="Server URL"
+                label={t("Server URL")}
                 value={urlInput}
                 onChangeText={setUrlInput}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="url"
-                placeholder="https://your-server.example.com"
+                placeholder={t("https://your-server.example.com")}
               />
               {serverMsg ? <AppText variant="caption" color="brand" className="mt-2">{serverMsg}</AppText> : null}
               {insecureServer ? (
@@ -410,17 +415,17 @@ export default function SettingsScreen() {
                   </AppText>
                 </View>
               ) : null}
-              <Button title="Test & save" variant="secondary" onPress={saveServer} loading={testing} className="mt-3" />
+              <Button title={t("Test & save")} variant="secondary" onPress={saveServer} loading={testing} className="mt-3" />
             </View>
           </SettingsGroup>
 
           {/* Account actions */}
-          <SettingsGroup title="Account actions">
-            <SettingsRow icon={LogOut} tint="muted" label="Sign out" onPress={() => logout()} chevron />
+          <SettingsGroup title={t("Account actions")}>
+            <SettingsRow icon={LogOut} tint="muted" label={t("Sign out")} onPress={() => logout()} chevron />
             <SettingsRow
               icon={Trash2}
-              label="Delete account"
-              description="Permanently delete all your data"
+              label={t("Delete account")}
+              description={t("Permanently delete all your data")}
               destructive
               divider
               onPress={() => setConfirmDelete(true)}
@@ -442,10 +447,10 @@ export default function SettingsScreen() {
         open={confirmDelete}
         icon={Trash2}
         destructive
-        title="Delete account?"
-        message="This permanently deletes your account and all of your data. This can't be undone."
-        confirmLabel="Delete account"
-        busyLabel="Deleting…"
+        title={t("Delete account?")}
+        message={t("This permanently deletes your account and all of your data. This can't be undone.")}
+        confirmLabel={t("Delete account")}
+        busyLabel={t("Deleting…")}
         busy={deleteAccount.busy}
         onConfirm={() => { void deleteAccount.run() }}
         onCancel={() => setConfirmDelete(false)}

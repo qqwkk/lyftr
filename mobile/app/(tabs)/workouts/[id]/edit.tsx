@@ -5,7 +5,7 @@ import {
   AlertCircle, ArrowLeft, CalendarDays, Clock, Dumbbell, FileText, Plus, Zap,
 } from 'lucide-react-native'
 import type { LucideIcon } from 'lucide-react-native'
-import { apiErrorMessage, useAsyncAction, dayToInstant, displayToLbs, lbsToDisplay, weightShort, type Exercise, workoutDay } from '@lyftr/shared'
+import { apiErrorMessage, useAsyncAction, dayToInstant, displayToLbs, lbsToDisplay, weightShort, type Exercise, workoutDay, t, tPlural } from '@lyftr/shared'
 import { AppText, Button, DateInput, EmptyState, ErrorState, Field, IconButton, Label, Loading, Screen } from '../../../../src/components/ui'
 import { ExerciseFormCard } from '../../../../src/components/workouts/ExerciseFormCard'
 import { DurationField } from '../../../../src/components/workouts/DurationField'
@@ -112,7 +112,7 @@ export default function EditWorkout() {
           })),
         })
       })
-      .catch((err) => setLoadError(apiErrorMessage(err, "The server didn't say what went wrong.")))
+      .catch((err) => setLoadError(apiErrorMessage(err, t("The server didn't say what went wrong."))))
       .finally(() => setInitialLoading(false))
     // Web effect deps: [id] only — settings are fetched before a user can navigate here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -201,15 +201,15 @@ export default function EditWorkout() {
     // Web navigates to /workouts. Pop past the (stale) detail screen back to the
     // list — the detail refetches on next visit; the list reloads on focus.
     router.dismissTo('/workouts')
-  }, 'Failed to update workout')
+  }, t('Failed to update workout'))
 
   useEffect(() => {
     if (error || save.error) scrollRef.current?.scrollTo({ y: 0, animated: true })
   }, [error, save.error])
 
   const handleSubmit = async () => {
-    if (!formData.name.trim()) { setError('Workout name required'); return }
-    if (formData.exercises.length === 0) { setError('Add at least one exercise'); return }
+    if (!formData.name.trim()) { setError(t('Workout name required')); return }
+    if (formData.exercises.length === 0) { setError(t('Add at least one exercise')); return }
     setError('')
     void save.run()
   }
@@ -219,10 +219,10 @@ export default function EditWorkout() {
       <Screen>
         <ErrorState
           size="page"
-          title="Couldn't load this workout"
+          title={t("Couldn't load this workout")}
           message={loadError}
           onRetry={() => { setLoadError(null); setRetryKey((k) => k + 1) }}
-          secondary={<Button title="Back to workouts" variant="secondary" onPress={goBack} />}
+          secondary={<Button title={t("Back to workouts")} variant="secondary" onPress={goBack} />}
         />
       </Screen>
     )
@@ -252,11 +252,11 @@ export default function EditWorkout() {
       >
         <View className="gap-6 py-4">
           <View className="flex-row items-center gap-3">
-            <IconButton icon={ArrowLeft} label="Back" variant="ghost" size="md" onPress={goBack} />
+            <IconButton icon={ArrowLeft} label={t("Back")} variant="ghost" size="md" onPress={goBack} />
             <View>
-              <AppText variant="title">Edit Workout</AppText>
+              <AppText variant="title">{t("Edit Workout")}</AppText>
               <AppText variant="caption" color="muted">
-                {formData.exercises.length} exercises • {totalSets} sets
+                {tPlural(formData.exercises.length, '{count} exercise|{count} exercises')} • {tPlural(totalSets, '{count} set|{count} sets')}
                 {totalWeight > 0 ? ` • ${Math.round(totalWeight)} ${wUnit}` : ''}
               </AppText>
             </View>
@@ -270,7 +270,7 @@ export default function EditWorkout() {
           ) : null}
 
           <View>
-            <FieldHeader icon={Dumbbell} label="Workout Name" />
+            <FieldHeader icon={Dumbbell} label={t("Workout Name")} />
             <Field
               value={formData.name}
               onChangeText={(t) => setFormData((prev) => ({ ...prev, name: t }))}
@@ -281,7 +281,7 @@ export default function EditWorkout() {
               shifts the day; the original time-of-day is preserved on submit. */}
           <View className="flex-row gap-3">
             <View className="flex-[2]">
-              <FieldHeader icon={CalendarDays} label="Date" />
+              <FieldHeader icon={CalendarDays} label={t("Date")} />
               <DateInput
                 value={formData.date}
                 onChange={(d) => setFormData((prev) => ({ ...prev, date: d }))}
@@ -290,7 +290,7 @@ export default function EditWorkout() {
             </View>
             <View className="flex-1">
               {/* "min" already rides the value, so the label stays just "Duration". */}
-              <FieldHeader icon={Clock} label="Duration" />
+              <FieldHeader icon={Clock} label={t("Duration")} />
               <DurationField
                 value={formData.duration}
                 onChange={(m) => setFormData((prev) => ({ ...prev, duration: m }))}
@@ -300,7 +300,7 @@ export default function EditWorkout() {
           </View>
 
           <View>
-            <FieldHeader icon={FileText} label="Notes" />
+            <FieldHeader icon={FileText} label={t("Notes")} />
             <Field
               value={formData.notes}
               onChangeText={(t) => setFormData((prev) => ({ ...prev, notes: t }))}
@@ -313,7 +313,7 @@ export default function EditWorkout() {
             <View className="mb-3 flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">
                 <Zap size={14} color={accent} strokeWidth={2.2} />
-                <Label>Exercises</Label>
+                <Label>{t("Exercises")}</Label>
               </View>
               <Pressable
                 accessibilityRole="button"
@@ -321,7 +321,7 @@ export default function EditWorkout() {
                 className="flex-row items-center gap-1.5 rounded-lg bg-brand-500 px-3 py-2 active:scale-95"
               >
                 <Plus size={13} color="#ffffff" />
-                <Text className="font-sans-semibold text-xs text-white">Add Exercise</Text>
+                <Text className="font-sans-semibold text-xs text-white">{t("Add Exercise")}</Text>
               </Pressable>
             </View>
 
@@ -330,8 +330,8 @@ export default function EditWorkout() {
                 <EmptyState
                   compact
                   icon={Dumbbell}
-                  title="No exercises"
-                  subtitle="Add an exercise to this workout"
+                  title={t("No exercises")}
+                  subtitle={t("Add an exercise to this workout")}
                 />
               </View>
             )}
@@ -361,12 +361,12 @@ export default function EditWorkout() {
               {formData.exercises.length > 0 && (
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Add exercise"
+                  accessibilityLabel={t("Add exercise")}
                   onPress={() => setShowPicker(true)}
                   className="h-11 flex-row items-center justify-center gap-1.5 rounded-2xl border border-dashed border-surface-border active:opacity-60"
                 >
                   <Plus size={14} color={accent} />
-                  <Text className="font-sans-semibold text-xs" style={{ color: accent }}>Add Exercise</Text>
+                  <Text className="font-sans-semibold text-xs" style={{ color: accent }}>{t("Add Exercise")}</Text>
                 </Pressable>
               )}
             </View>
@@ -378,8 +378,8 @@ export default function EditWorkout() {
       {/* Sticky footer actions — Save stays reachable however long the form grows.
           -mx-5 lets the divider span edge-to-edge past Screen's px-5. */}
       <View className="-mx-5 flex-row gap-3 border-t border-surface-border bg-surface-base px-5 pb-2 pt-3">
-        <Button title="Cancel" variant="secondary" className="flex-1" onPress={goBack} />
-        <Button title="Save Changes" className="flex-1" onPress={handleSubmit} loading={save.busy} />
+        <Button title={t("Cancel")} variant="secondary" className="flex-1" onPress={goBack} />
+        <Button title={t("Save Changes")} className="flex-1" onPress={handleSubmit} loading={save.busy} />
       </View>
 
       {/* iOS-only Done bar docked above the numeric keypads (they have no return key). */}

@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native'
 import { useFocusEffect } from 'expo-router'
-import { format } from 'date-fns'
 import * as Haptics from 'expo-haptics'
 import {
   Activity, ArrowDown, ArrowUp, Calendar, Minus, Scale, Sunrise,
   TrendingDown, TrendingUp, X,
 } from 'lucide-react-native'
-import { apiErrorMessage, useAsyncAction, dayToInstant, daysAgoStr, displayToLbs, displayWeight, maxWeight, todayStr, weightError, weightShort, type WeightLog, type WeightStats, entryDay, dayToLocalDate, BODYWEIGHT_STEP, clampStep, formatDay } from '@lyftr/shared'
+import { apiErrorMessage, useAsyncAction, dayToInstant, daysAgoStr, displayToLbs, displayWeight, maxWeight, todayStr, weightError, weightShort, type WeightLog, type WeightStats, entryDay, dayToLocalDate, BODYWEIGHT_STEP, clampStep, formatDay, t, formatLocalized } from '@lyftr/shared'
 import { Alert,
   AppText, BarbellBroken, Button, Card, DateInput, ErrorState, Field, Label, NumberField, NumericKeyboardAccessory,
   NUMERIC_ACCESSORY_ID, PageHeader, Screen, SegmentedControl, Skeleton, StatFailure, StepperTile,
@@ -79,7 +78,7 @@ export default function Weight() {
         setChartPeriod(period)
         setChartError(null)
       })
-      .catch((err) => { if (id === chartRequest.current) setChartError(apiErrorMessage(err, "Couldn't load your weight trend.")) })
+      .catch((err) => { if (id === chartRequest.current) setChartError(apiErrorMessage(err, t("Couldn't load your weight trend."))) })
       .finally(() => { if (id === chartRequest.current) setChartLoading(false) })
   }, [period])
   useEffect(() => { refetchChart() }, [refetchChart])
@@ -89,7 +88,7 @@ export default function Weight() {
     const id = ++statsRequest.current
     return client.weightAPI.stats()
       .then((data) => { if (id === statsRequest.current) { setStats(data); setStatsError(null) } })
-      .catch((err) => { if (id === statsRequest.current) setStatsError(apiErrorMessage(err, "Couldn't load your weight stats.")) })
+      .catch((err) => { if (id === statsRequest.current) setStatsError(apiErrorMessage(err, t("Couldn't load your weight stats."))) })
   }, [])
   useEffect(() => {
     fetchSettings()
@@ -168,7 +167,7 @@ export default function Weight() {
       // this window's trend, however recent it is.
       (chartPeriod === period ? [...chartLogs] : []).reverse().map((l) => {
         const d = dayToLocalDate(entryDay(l))
-        return { date: format(d, 'M/d'), weight: displayWeight(l.weight, unit), sub: format(d, 'MMM d, yyyy') }
+        return { date: formatLocalized(d, 'M/d'), weight: displayWeight(l.weight, unit), sub: formatLocalized(d, 'MMM d, yyyy') }
       }),
     [chartLogs, chartPeriod, period, unit]
   )
@@ -187,7 +186,7 @@ export default function Weight() {
         setShowNotes(false)
         duplicateWarningDismissedRef.current = false
         refreshAll()
-  }, 'Failed to log weight')
+  }, t('Failed to log weight'))
 
   const handleLog = async () => {
     if (log.busy) return
@@ -278,9 +277,9 @@ export default function Weight() {
   const changeWord = change === 0 ? 'no change' : change < 0 ? 'lost' : 'gained'
 
   const statCards = [
-    { label: 'Avg', value: avg, icon: Activity, color: accent },
-    { label: 'Low', value: min, icon: ArrowDown, color: brand.successSoft },
-    { label: 'High', value: max, icon: ArrowUp, color: brand.errorSoft },
+    { label: t('Avg'), value: avg, icon: Activity, color: accent },
+    { label: t('Low'), value: min, icon: ArrowDown, color: brand.successSoft },
+    { label: t('High'), value: max, icon: ArrowUp, color: brand.errorSoft },
   ]
 
   // Title and subtitle stay so the reader knows where they are; the unit chip does not,
@@ -289,10 +288,10 @@ export default function Weight() {
     return (
       <Screen>
         <View className="flex-1 gap-5 py-4">
-          <PageHeader title="Weight" subtitle="Track your body weight over time" />
+          <PageHeader title={t("Weight")} subtitle={t("Track your body weight over time")} />
           <ErrorState
             size="page"
-            title="Couldn't load your weight"
+            title={t("Couldn't load your weight")}
             message={pageError}
             onRetry={retryAll}
             retrying={retrying}
@@ -319,8 +318,8 @@ export default function Weight() {
         ListHeaderComponent={
           <View className="gap-5 py-4">
             <PageHeader
-              title="Weight"
-              subtitle="Track your body weight over time"
+              title={t("Weight")}
+              subtitle={t("Track your body weight over time")}
               action={
                 <View className="flex-row items-center gap-1.5 rounded-full border border-brand-500/25 bg-brand-500/10 px-3 py-1">
                   <Calendar size={12} color={accent} />
@@ -334,11 +333,11 @@ export default function Weight() {
               <View className="mb-3 flex-row items-center justify-between">
                 <View className="flex-row items-center gap-2">
                   <Scale size={16} color={accent} />
-                  <AppText variant="bodySemibold">Log Weight</AppText>
+                  <AppText variant="bodySemibold">{t("Log Weight")}</AppText>
                 </View>
                 {items.length > 0 ? (
                   <AppText variant="caption" color="muted">
-                    last: {displayWeight(items[0].weight, unit)} {wUnit}
+                    {t("last:")} {displayWeight(items[0].weight, unit)} {wUnit}
                   </AppText>
                 ) : null}
               </View>
@@ -355,8 +354,8 @@ export default function Weight() {
                     inputMode="decimal"
                     value={newWeight}
                     onChange={setNewWeight}
-                    placeholder="0"
-                    accessibilityLabel="Weight"
+                    placeholder={t("0")}
+                    accessibilityLabel={t("Weight")}
                     inputAccessoryViewID={NUMERIC_ACCESSORY_ID}
                   />
                 </StepperTile>
@@ -364,8 +363,8 @@ export default function Weight() {
                 {showNotes ? (
                   <View className="gap-2 rounded-xl border border-surface-border bg-surface-overlay p-3">
                     <View className="mb-1 flex-row items-center justify-between">
-                      <AppText variant="caption" color="secondary">Date & note</AppText>
-                      <Pressable onPress={() => setShowNotes(false)} hitSlop={8} className="p-1 active:opacity-60" accessibilityLabel="Collapse">
+                      <AppText variant="caption" color="secondary">{t("Date & note")}</AppText>
+                      <Pressable onPress={() => setShowNotes(false)} hitSlop={8} className="p-1 active:opacity-60" accessibilityLabel={t("Collapse")}>
                         <X size={14} color={colors.txMuted} />
                       </Pressable>
                     </View>
@@ -373,7 +372,7 @@ export default function Weight() {
                     <Field
                       value={newNotes}
                       onChangeText={setNewNotes}
-                      placeholder="Note — e.g. morning, post-run"
+                      placeholder={t("Note — e.g. morning, post-run")}
                       maxLength={200}
                     />
                   </View>
@@ -383,7 +382,7 @@ export default function Weight() {
                     className="h-11 flex-row items-center justify-center gap-2 rounded-xl border border-surface-border bg-surface-overlay active:scale-[0.99]"
                   >
                     <Calendar size={16} color={colors.txMuted} />
-                    <AppText variant="body" color="secondary">Add date & note</AppText>
+                    <AppText variant="body" color="secondary">{t("Add date & note")}</AppText>
                   </Pressable>
                 )}
 
@@ -395,9 +394,9 @@ export default function Weight() {
                   <Alert
                     variant="warning"
                     actions={[
-                      { label: 'Cancel', onPress: () => setShowDuplicateWarning(false) },
+                      { label: t('Cancel'), onPress: () => setShowDuplicateWarning(false) },
                       {
-                        label: 'Log Anyway',
+                        label: t('Log Anyway'),
                         primary: true,
                         onPress: () => {
                           duplicateWarningDismissedRef.current = true
@@ -407,19 +406,19 @@ export default function Weight() {
                       },
                     ]}
                   >
-                    Already logged on {formatDay(entryDay(items[0]), 'MMM d')} ({displayWeight(items[0].weight, unit)} {wUnit}). Log again anyway?
+                    {t("Already logged on")} {formatDay(entryDay(items[0]), 'MMM d')} ({displayWeight(items[0].weight, unit)} {wUnit}{t("). Log again anyway?")}
                   </Alert>
                 ) : null}
 
                 <Button
-                  title={log.busy ? 'Logging…' : 'Log Weight'}
+                  title={log.busy ? t('Logging…') : t('Log Weight')}
                   onPress={handleLog}
                   loading={log.busy}
                   disabled={!(parseFloat(newWeight) > 0) || log.busy}
                 />
                 <View className="flex-row items-center justify-center gap-1.5">
                   <Sunrise size={14} color={brand.warningSoft} />
-                  <AppText variant="caption" color="muted">Best logged in the morning, after the bathroom</AppText>
+                  <AppText variant="caption" color="muted">{t("Best logged in the morning, after the bathroom")}</AppText>
                 </View>
               </View>
             </Card>
@@ -431,21 +430,21 @@ export default function Weight() {
                 // cannot be the default: it told someone with years of entries they had
                 // never weighed themselves.
                 <ErrorState
-                  title="Couldn't load your weight"
+                  title={t("Couldn't load your weight")}
                   message={listError ?? chartError ?? statsError ?? ''}
                   onRetry={retryAll}
                   retrying={retrying}
                 />
               ) : items.length === 0 ? (
                 <View className="items-center py-2">
-                  <Label className="mb-1">Current Weight</Label>
-                  <AppText variant="body" color="muted">The scale doesn't know you exist yet. Fix that.</AppText>
+                  <Label className="mb-1">{t("Current Weight")}</Label>
+                  <AppText variant="body" color="muted">{t("The scale doesn't know you exist yet. Fix that.")}</AppText>
                 </View>
               ) : (
                 <>
                   <View className="flex-row items-start justify-between">
                     <View>
-                      <Label className="mb-2">Current Weight</Label>
+                      <Label className="mb-2">{t("Current Weight")}</Label>
                       <View className="flex-row items-end gap-2">
                         <AppText variant="display" style={{ fontSize: 40, lineHeight: 44, fontVariant: ['tabular-nums'] }}>{currentKnown ? current : '—'}</AppText>
                         {currentKnown ? <AppText variant="body" color="muted" className="mb-1.5">{wUnit}</AppText> : null}
@@ -462,7 +461,7 @@ export default function Weight() {
                   </View>
                   {changeKnown ? (
                     <AppText variant="caption" color="muted" className="mt-3">
-                      {Math.abs(change)} {wUnit} {changeWord} over {period}
+                      {Math.abs(change)} {wUnit} {changeWord} {t("over")} {period}
                     </AppText>
                   ) : null}
                 </>
@@ -480,7 +479,7 @@ export default function Weight() {
                   {chartPending ? (
                     <Skeleton width={56} height={22} />
                   ) : figuresFailed ? (
-                    <StatFailure label={`Couldn't load ${s.label.toLowerCase()} weight`} />
+                    <StatFailure label={t("Couldn't load {label} weight", { label: s.label.toLowerCase() })} />
                   ) : (
                     <View className="flex-row items-end gap-1">
                       <AppText variant="heading" style={{ fontVariant: ['tabular-nums'] }}>{aggregatesUnknown ? '—' : Math.round(s.value)}</AppText>
@@ -496,9 +495,9 @@ export default function Weight() {
                 {/* The same mark every other failure on this screen uses, in warning ink
                     rather than error: these numbers are real, just not fresh. */}
                 <BarbellBroken size={20} color={semanticInk[isDark ? 'dark' : 'light'].warning} />
-                <AppText variant="caption" color="muted">Couldn't refresh these — showing the last we loaded.</AppText>
+                <AppText variant="caption" color="muted">{t("Couldn't refresh these — showing the last we loaded.")}</AppText>
                 <Pressable onPress={retryAll} hitSlop={8} accessibilityRole="button" className="active:opacity-60">
-                  <AppText variant="caption" color="secondary" className="underline">Try again</AppText>
+                  <AppText variant="caption" color="secondary" className="underline">{t("Try again")}</AppText>
                 </Pressable>
               </View>
             ) : null}
@@ -506,9 +505,9 @@ export default function Weight() {
             {/* Chart + period selector */}
             <Card>
               <View className="mb-3 flex-row items-center justify-between gap-2">
-                <AppText variant="bodySemibold">Trend</AppText>
+                <AppText variant="bodySemibold">{t("Trend")}</AppText>
                 <View className="flex-1 max-w-[220px]">
-                  <SegmentedControl size="sm" options={PERIOD_OPTIONS} value={period} onChange={setPeriod} />
+                  <SegmentedControl size="sm" options={PERIOD_OPTIONS.map(o => ({ ...o, label: t(o.label) }))} value={period} onChange={setPeriod} />
                 </View>
               </View>
               <View onLayout={(e) => setChartWidth(e.nativeEvent.layout.width)}>
@@ -517,11 +516,11 @@ export default function Weight() {
                     <Skeleton width="100%" height={120} radius={12} />
                   </View>
                 ) : chartData.length === 0 && chartError ? (
-                  <ErrorState title="Couldn't load your trend" message={chartError} onRetry={retryAll} retrying={retrying} />
+                  <ErrorState title={t("Couldn't load your trend")} message={chartError} onRetry={retryAll} retrying={retrying} />
                 ) : chartData.length < 2 ? (
                   <View className="h-44 items-center justify-center">
                     <AppText variant="body" color="muted">
-                      {chartData.length === 0 ? 'No data for this period' : 'Log another entry to see the trend'}
+                      {chartData.length === 0 ? t('No data for this period') : t('Log another entry to see the trend')}
                     </AppText>
                   </View>
                 ) : (
@@ -530,7 +529,7 @@ export default function Weight() {
               </View>
             </Card>
 
-            {items.length > 0 ? <Label className="px-1">History</Label> : null}
+            {items.length > 0 ? <Label className="px-1">{t("History")}</Label> : null}
           </View>
         }
         renderItem={({ item, index }) => (
@@ -545,7 +544,7 @@ export default function Weight() {
           // Only under rows that arrived: with none, the hero above already carries the
           // failure, and saying it twice is two retries for one problem.
           listError && items.length > 0 ? (
-            <ErrorState title="Couldn't load more entries" message={listError} onRetry={retryList} />
+            <ErrorState title={t("Couldn't load more entries")} message={listError} onRetry={retryList} />
           ) : hasMore && loading && items.length > 0 ? (
             <View className="items-center py-3">
               <ActivityIndicator size="small" color={accent} />

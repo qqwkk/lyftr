@@ -1,4 +1,22 @@
 import { format } from 'date-fns'
+import { enUS, ru } from 'date-fns/locale'
+import { getLanguage } from '../i18n'
+
+/** Format a Date using the language currently selected in profile settings. */
+export const formatLocalized = (date: Date | number, pattern: string): string => {
+  if (getLanguage() !== 'ru') return format(date, pattern, { locale: enUS })
+  const russianPattern: Record<string, string> = {
+    'MMM d, yyyy': 'd MMM yyyy',
+    'MMMM d, yyyy': 'd MMMM yyyy',
+    'EEEE, MMMM d, yyyy': 'EEEE, d MMMM yyyy',
+    'EEE, MMM d, yyyy': 'EEE, d MMM yyyy',
+    'EEEE, MMMM d': 'EEEE, d MMMM',
+    'EEE, MMM d': 'EEE, d MMM',
+    'MMM d': 'd MMM',
+    'M/d': 'dd.MM',
+  }
+  return format(date, russianPattern[pattern] ?? pattern, { locale: ru })
+}
 // The one place a calendar day is produced or read on the client.
 //
 // The model, which is the one Fitbit, Garmin, Strava and Health Connect all use: a
@@ -196,12 +214,16 @@ export const formatDay = (day: string | null | undefined, pattern: string): stri
   // '2026-13-45' matches the shape but rolls over into another month; a day that does
   // not survive the round trip was never a real one.
   if (Number.isNaN(d.getTime()) || instantToDay(d.toISOString()) !== day) return UNKNOWN_DAY
-  return format(d, pattern)
+  return formatLocalized(d, pattern)
 }
 
-const MONTH_NAMES = [
+const MONTH_NAMES_EN = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
+]
+const MONTH_NAMES_RU = [
+  'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+  'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь',
 ]
 
 /**
@@ -224,5 +246,6 @@ export const memberSince = (iso?: string): string => {
   if (!iso) return '—'
   const d = new Date(iso)
   if (Number.isNaN(d.getTime()) || d.getUTCFullYear() < 2000) return '—'
-  return `${MONTH_NAMES[d.getUTCMonth()]} ${d.getUTCFullYear()}`
+  const months = getLanguage() === 'ru' ? MONTH_NAMES_RU : MONTH_NAMES_EN
+  return `${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`
 }

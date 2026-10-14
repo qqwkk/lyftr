@@ -4,7 +4,7 @@ import { Link } from 'expo-router'
 import { AuthScaffold } from '../../src/components/AuthScaffold'
 import { PasswordRule } from '../../src/components/ui'
 import { IconInput, GradientButton, AuthError, ServerRow, Footer } from '../../src/components/authui'
-import { registrationOpen, lengthRuleLabel, matchRuleLabel, newPasswordRules } from '@lyftr/shared'
+import { registrationOpen, lengthRuleLabel, matchRuleLabel, newPasswordRules, t } from '@lyftr/shared'
 import { useAuthStore, useServerInfo } from '../../src/lib/lyftr'
 import { useTheme } from '../../src/theme/useTheme'
 
@@ -38,7 +38,7 @@ export default function Register() {
   const rules = newPasswordRules({ password, confirm: passwordConfirm })
 
   const submit = async () => {
-    if (!EMAIL_RE.test(email.trim())) { setLocalError('Enter a valid email address'); return }
+    if (!EMAIL_RE.test(email.trim())) { setLocalError(t('Enter a valid email address')); return }
     // Backstop — the button is disabled until the rules pass.
     if (!rules.ready) return
     setLocalError(null)
@@ -52,7 +52,7 @@ export default function Register() {
   // meet a 403 on submit. ServerRow stays: they may just be pointed at the wrong server.
   if (!isOpen) {
     return (
-      <AuthScaffold heading="Registration closed" subtitle="This server is not accepting new accounts.">
+      <AuthScaffold heading={t("Registration closed")} subtitle={t("This server is not accepting new accounts.")}>
         <ServerRow />
         <Text
           style={{
@@ -63,12 +63,11 @@ export default function Register() {
             marginTop: 8,
           }}
         >
-          The owner of this Lyftr instance has turned off new signups. If you should have an
-          account here, ask them to create one for you.
+          {t("The owner of this Lyftr instance has turned off new signups. If you should have an account here, ask them to create one for you.")}
         </Text>
         <Footer>
           <Link href="/login" style={{ color: accent, fontFamily: 'PlusJakartaSans_800ExtraBold', fontSize: 14 }}>
-            Back to sign in
+            {t("Back to sign in")}
           </Link>
         </Footer>
       </AuthScaffold>
@@ -76,45 +75,45 @@ export default function Register() {
   }
 
   return (
-    <AuthScaffold heading="Create account" subtitle="Start your training log.">
+    <AuthScaffold heading={t("Create account")} subtitle={t("Start your training log.")}>
       <ServerRow />
       <IconInput
-        label="Email"
+        label={t("Email")}
         icon="mail"
         value={email}
         onChangeText={onChange(setEmail)}
         keyboardType="email-address"
-        placeholder="you@example.com"
+        placeholder={t("you@example.com")}
       />
       <IconInput
-        label="Password"
+        label={t("Password")}
         icon="lock"
         password
         value={password}
         onChangeText={onChange(setPassword)}
-        placeholder="••••••••"
+        placeholder={t("••••••••")}
       />
       <View className="gap-1.5 mt-2">
         <PasswordRule state={rules.length}>{lengthRuleLabel(password)}</PasswordRule>
       </View>
       <IconInput
-        label="Confirm password"
+        label={t("Confirm password")}
         icon="lock"
         password
         value={passwordConfirm}
         onChangeText={onChange(setPasswordConfirm)}
-        placeholder="••••••••"
+        placeholder={t("••••••••")}
       />
       <View className="gap-1.5 mt-2">
         <PasswordRule state={rules.match}>{matchRuleLabel(rules.match)}</PasswordRule>
       </View>
       {shownError ? <AuthError message={shownError} /> : null}
-      <GradientButton title="Create account" onPress={submit} loading={loading} disabled={!rules.ready} />
+      <GradientButton title={t("Create account")} onPress={submit} loading={loading} disabled={!rules.ready} />
       <Footer>
         <View style={{ flexDirection: 'row', gap: 5 }}>
-          <Text style={{ color: colors.txSecondary, fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: 14 }}>Have an account?</Text>
+          <Text style={{ color: colors.txSecondary, fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: 14 }}>{t("Have an account?")}</Text>
           <Link href="/login" style={{ color: accent, fontFamily: 'PlusJakartaSans_800ExtraBold', fontSize: 14 }}>
-            Sign in
+            {t("Sign in")}
           </Link>
         </View>
       </Footer>

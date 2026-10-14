@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Search, Dumbbell } from 'lucide-react'
-import { useServerList, types } from '@lyftr/shared'
+import { useServerList, types, t } from '@lyftr/shared'
 import { ListError } from '../components/ui'
 import { exerciseAPI } from '../services/api'
 import { useWorkoutSession } from '../stores/workoutSession'
@@ -69,14 +69,14 @@ export default function WorkoutExercisePicker() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-4 flex-shrink-0">
         <button
-          aria-label="Back to workout"
+          aria-label={t("Back to workout")}
           onClick={() => navigate('/workout/active')}
           className="p-2 hover:bg-surface-muted rounded-lg transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-tx-muted" />
         </button>
         <div>
-          <h1 className="font-display font-bold text-xl text-tx-primary">Add Exercise</h1>
+          <h1 className="font-display font-bold text-xl text-tx-primary">{t("Add Exercise")}</h1>
           {/* Derived from the rows we actually hold, so it is only true if the fetch
               landed. On a failure `available` is empty and this read "0 loaded" directly
               above a message saying we could not load anything — the same claim the
@@ -96,7 +96,7 @@ export default function WorkoutExercisePicker() {
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Search exercises…"
+          placeholder={t("Search exercises…")}
           className="input pl-10 w-full"
           autoFocus
         />
@@ -107,18 +107,18 @@ export default function WorkoutExercisePicker() {
         {initialLoading ? (
           <div className="flex items-center justify-center py-12 text-tx-muted text-sm">
             <Dumbbell className="w-5 h-5 mr-2 animate-pulse text-brand-500" />
-            Loading…
+            {t('Loading…')}
           </div>
         ) : available.length === 0 ? (
           // "No exercises found" is only true if we heard back. On a failed fetch it
           // reads as an empty catalogue rather than a connection that dropped.
           error ? (
             <div className="py-4">
-              <ListError subject="these exercises" message={error} onRetry={retry} />
+              <ListError subject={t("these exercises")} message={error} onRetry={retry} />
             </div>
           ) : (
             <div className="flex items-center justify-center py-12 text-tx-muted text-sm">
-              No exercises found
+              {t('No exercises found')}
             </div>
           )
         ) : (
@@ -164,7 +164,7 @@ export default function WorkoutExercisePicker() {
                 disabled={loading}
                 className="btn-secondary btn-sm w-full my-3"
               >
-                {loading ? 'Loading…' : 'Load more'}
+                {loading ? t('Loading…') : t('Load more')}
               </button>
             )}
           </div>

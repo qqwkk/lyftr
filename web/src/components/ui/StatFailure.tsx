@@ -1,4 +1,5 @@
 import BarbellBrokenSVG from '../BarbellBrokenSVG'
+import { t } from '@lyftr/shared'
 
 // A figure that never arrived, in a slot too small to say so in words.
 //
@@ -22,7 +23,7 @@ import BarbellBrokenSVG from '../BarbellBrokenSVG'
 //
 // It repeats when several tiles in a row fail, and that is intended: each tile makes its
 // own claim, so each has to withdraw its own.
-export default function StatFailure({ label = "Couldn't load this figure" }: { label?: string }) {
+export default function StatFailure({ label = t("Couldn't load this figure") }: { label?: string }) {
   return (
     <span className="inline-flex items-center" role="img" aria-label={label}>
       <BarbellBrokenSVG className="w-[26px] h-[26px] text-[color:var(--alert-error)]" />

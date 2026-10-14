@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { workoutAPI } from '../services/api'
 import { useSettingsStore, weightShort, displayWeight, displayVolume } from '../stores/settings'
-import { apiErrorMessage, isNotFound, useAsyncAction, types, workoutDay, restLabel, calcVolume, countWorkingSets, exerciseVolume, formatDay } from '@lyftr/shared'
+import { apiErrorMessage, isNotFound, useAsyncAction, types, workoutDay, restLabel, calcVolume, countWorkingSets, exerciseVolume, formatDay, tPlural, t } from '@lyftr/shared'
 import { muscleColor } from '../utils/exerciseUtils'
 
 function SetChip({ set, isBest, unit }: { set: types.Set; isBest: boolean; unit: string }) {
@@ -16,7 +16,7 @@ function SetChip({ set, isBest, unit }: { set: types.Set; isBest: boolean; unit:
         ? 'bg-brand-500/15 text-brand-300 ring-1 ring-brand-500/25'
         : 'bg-surface-raised text-tx-secondary'
     }`}>
-      {set.reps > 0 ? set.reps : '—'} × {set.weight > 0 ? `${displayWeight(set.weight, unit)} ${unit}` : 'BW'}
+      {set.reps > 0 ? set.reps : '—'} × {set.weight > 0 ? `${displayWeight(set.weight, unit)} ${unit}` : t('BW')}
     </div>
   )
 }
@@ -47,7 +47,7 @@ export default function WorkoutDetail() {
         setWorkout(data)
       } catch (err: any) {
         setGone(isNotFound(err))
-        setError(apiErrorMessage(err, "The server didn't say what went wrong."))
+        setError(apiErrorMessage(err, t("The server didn't say what went wrong.")))
       } finally {
         setLoading(false)
       }
@@ -62,7 +62,7 @@ export default function WorkoutDetail() {
     if (!workout) return
     await workoutAPI.delete(workout.id)
     navigate('/workouts', { replace: true })
-  }, 'Failed to delete workout')
+  }, t('Failed to delete workout'))
 
   if (loading) {
     return (
@@ -76,10 +76,10 @@ export default function WorkoutDetail() {
     return (
       <ErrorState
         size="page"
-        title="Couldn't load this workout"
-        message={error ?? 'That workout no longer exists.'}
+        title={t("Couldn't load this workout")}
+        message={error ?? t('That workout no longer exists.')}
         onRetry={error && !gone ? () => { setError(null); setRetryKey(k => k + 1) } : undefined}
-        secondary={<Link to="/workouts" className="btn-secondary btn-sm">Back to workouts</Link>}
+        secondary={<Link to="/workouts" className="btn-secondary btn-sm">{t("Back to workouts")}</Link>}
       />
     )
   }
@@ -94,18 +94,18 @@ export default function WorkoutDetail() {
       {/* Back nav */}
       <div className="flex items-center justify-between">
         <Link to="/workouts" className="flex items-center gap-1.5 text-sm text-tx-muted hover:text-tx-primary transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Workouts
+          <ArrowLeft className="w-4 h-4" /> {t('Workouts')}
         </Link>
         <div className="flex items-center gap-1">
           <button
-            aria-label="Edit workout"
+            aria-label={t("Edit workout")}
             onClick={() => navigate(`/workouts/${workout.id}/edit`)}
             className="p-2 hover:bg-surface-muted rounded-lg transition-colors"
           >
             <Edit2 className="w-4 h-4 text-brand-500" />
           </button>
           <button
-            aria-label="Delete workout"
+            aria-label={t("Delete workout")}
             onClick={() => setConfirming(true)}
             className="p-2 hover:bg-error-500/10 rounded-lg transition-colors"
           >
@@ -119,10 +119,10 @@ export default function WorkoutDetail() {
         open={confirming}
         icon={Trash2}
         destructive
-        title="Delete Workout?"
-        message={`"${workout.name}" will be permanently deleted.`}
-        confirmLabel="Delete"
-        busyLabel="Deleting…"
+        title={t("Delete Workout?")}
+        message={t('"{name}" will be permanently deleted.', { name: workout.name })}
+        confirmLabel={t("Delete")}
+        busyLabel={t("Deleting…")}
         busy={remove.busy}
         error={remove.error}
         onConfirm={() => { void remove.run() }}
@@ -157,21 +157,21 @@ export default function WorkoutDetail() {
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 mb-0.5">
               <Clock className="w-3.5 h-3.5 text-tx-muted" />
-              <p className="text-xs text-tx-muted">Duration</p>
+              <p className="text-xs text-tx-muted">{t("Duration")}</p>
             </div>
-            <p className="text-lg font-bold text-tx-primary tabular-nums">{durationMin}<span className="text-xs font-normal text-tx-muted ml-0.5">min</span></p>
+            <p className="text-lg font-bold text-tx-primary tabular-nums">{durationMin}<span className="text-xs font-normal text-tx-muted ml-0.5">{t("min")}</span></p>
           </div>
           <div className="text-center border-x border-surface-border">
             <div className="flex items-center justify-center gap-1 mb-0.5">
               <Dumbbell className="w-3.5 h-3.5 text-tx-muted" />
-              <p className="text-xs text-tx-muted">Sets</p>
+              <p className="text-xs text-tx-muted">{t("Sets")}</p>
             </div>
             <p className="text-lg font-bold text-tx-primary tabular-nums">{totalSets}</p>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 mb-0.5">
               <TrendingUp className="w-3.5 h-3.5 text-tx-muted" />
-              <p className="text-xs text-tx-muted">Volume</p>
+              <p className="text-xs text-tx-muted">{t("Volume")}</p>
             </div>
             <p className="text-lg font-bold text-tx-primary tabular-nums">
               {totalVolume > 0 ? `${totalVolume.toLocaleString()}` : '—'}
@@ -188,7 +188,7 @@ export default function WorkoutDetail() {
       {/* Exercises */}
       {!restOn && (
         <div className="flex items-center gap-1.5 text-[11px] text-tx-muted px-1">
-          <TimerOff className="w-3.5 h-3.5" /> Rest timer is off — turn it on in Settings
+          <TimerOff className="w-3.5 h-3.5" /> {t('Rest timer is off — turn it on in Settings')}
         </div>
       )}
       <div className="space-y-3">
@@ -225,12 +225,12 @@ export default function WorkoutDetail() {
                         {ex.exercise.muscle_group}
                       </span>
                     )}
-                    <span className="text-xs text-tx-muted truncate">{sets.length} set{sets.length === 1 ? '' : 's'}{exVol > 0 ? ` · ${exVol.toLocaleString()} ${wUnit}` : ''}</span>
+                    <span className="text-xs text-tx-muted truncate">{tPlural(sets.length, '{count} set|{count} sets')}{exVol > 0 ? ` · ${exVol.toLocaleString()} ${wUnit}` : ''}</span>
                   </div>
                 </div>
                 {maxWeight > 0 && (
                   <div className="text-right flex-shrink-0 mr-1">
-                    <p className="text-[10px] text-tx-muted uppercase tracking-wide">best</p>
+                    <p className="text-[10px] text-tx-muted uppercase tracking-wide">{t("best")}</p>
                     <p className="text-sm font-bold text-brand-400 tabular-nums">{maxWeight} {wUnit}</p>
                   </div>
                 )}
@@ -245,7 +245,7 @@ export default function WorkoutDetail() {
                     ))}
                   </div>
                   {restOn && (ex.rest_seconds === 0
-                    ? <span className="text-xs text-tx-muted flex-shrink-0">No rest</span>
+                    ? <span className="text-xs text-tx-muted flex-shrink-0">{t("No rest")}</span>
                     : <span className="flex items-center gap-1 text-xs text-tx-muted flex-shrink-0"><Pause className="w-3.5 h-3.5" />{restLabel(ex.rest_seconds ?? 90)}</span>
                   )}
                 </div>

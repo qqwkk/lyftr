@@ -1,6 +1,7 @@
 import { Edit2, Trash2 } from 'lucide-react-native'
 import type { SheetAction } from './ActionSheet'
 import type { ConfirmSheetProps } from './ConfirmSheet'
+import { t } from '@lyftr/shared'
 
 // Presets for the common menu actions, so every "edit" / "delete" is defined once
 // (icon + intent + default label) instead of re-specified at each call site. These
@@ -8,11 +9,11 @@ import type { ConfirmSheetProps } from './ConfirmSheet'
 // SheetButton/ActionSheet primitives free of any app concepts. Add a preset here when
 // an action recurs across screens (duplicate, share, …); pass a label to override.
 
-export function editAction(onPress: () => void, label = 'Edit'): SheetAction {
+export function editAction(onPress: () => void, label = t('Edit')): SheetAction {
   return { label, icon: Edit2, onPress }
 }
 
-export function deleteAction(onPress: () => void, label = 'Delete'): SheetAction {
+export function deleteAction(onPress: () => void, label = t('Delete')): SheetAction {
   return { label, icon: Trash2, destructive: true, onPress }
 }
 
@@ -26,9 +27,9 @@ export function deleteConfirmProps(
 ): Pick<ConfirmSheetProps, 'title' | 'message' | 'confirmLabel' | 'busyLabel' | 'destructive' | 'icon'> {
   return {
     title,
-    message: `${subject} will be permanently deleted.`,
-    confirmLabel: 'Delete',
-    busyLabel: 'Deleting…',
+    message: t('{subject} will be permanently deleted.', { subject }),
+    confirmLabel: t('Delete'),
+    busyLabel: t('Deleting…'),
     destructive: true,
     icon: Trash2,
   }

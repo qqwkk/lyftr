@@ -1,6 +1,6 @@
 import { Pressable, Text, TextInput, View } from 'react-native'
 import { Minus, Plus } from 'lucide-react-native'
-import { sanitizeNumericInput } from '@lyftr/shared'
+import { sanitizeNumericInput, t } from '@lyftr/shared'
 import { useTheme } from '../../theme/useTheme'
 
 // A thumb-friendly duration input: one unified stepper — −/+ as integrated end
@@ -23,7 +23,7 @@ export function DurationField({ value, onChange, inputAccessoryViewID }: {
     <View className="h-12 flex-row items-stretch overflow-hidden rounded-xl border border-surface-border bg-surface-overlay">
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Decrease duration"
+        accessibilityLabel={t("Decrease duration")}
         onPress={() => step(-STEP)}
         disabled={!canDec}
         className={`w-8 items-center justify-center border-r border-surface-border active:bg-surface-muted ${canDec ? '' : 'opacity-40'}`}
@@ -48,9 +48,9 @@ export function DurationField({ value, onChange, inputAccessoryViewID }: {
             returnKeyType="done"
             selectTextOnFocus
             inputAccessoryViewID={inputAccessoryViewID}
-            placeholder="0"
+            placeholder={t("0")}
             placeholderTextColor={colors.txMuted}
-            accessibilityLabel="Duration in minutes"
+            accessibilityLabel={t("Duration in minutes")}
             className="py-0 text-center text-base text-tx-primary"
             // fontFamily inline (not via className) so the input never renders one frame
             // in the system fallback font before the brand font resolves. lineHeight +
@@ -63,14 +63,14 @@ export function DurationField({ value, onChange, inputAccessoryViewID }: {
             className="ml-0.5 text-xs text-tx-muted"
             style={{ fontFamily: 'PlusJakartaSans_500Medium', includeFontPadding: false }}
           >
-            min
+            {t("min")}
           </Text>
         </View>
       </View>
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Increase duration"
+        accessibilityLabel={t("Increase duration")}
         onPress={() => step(STEP)}
         className="w-8 items-center justify-center border-l border-surface-border active:bg-surface-muted"
       >

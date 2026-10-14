@@ -171,6 +171,62 @@ true of one file. Do not document it here before it lands.
 
 ---
 
+## Language — read before adding any string a person reads
+
+**The rule: the English sentence IS the key, and one dictionary answers it.**
+
+There is no key namespace to invent and nothing to keep in step: you write
+`t('Add Set')`, and the Russian entry is keyed by that exact sentence. The cost of that
+convenience is that a missing entry is **invisible** — `t` returns its argument, so an
+untranslated screen renders perfectly readable English and every other test passes. That
+is what the two coverage guards exist for; nothing else can see it.
+
+Default language is Russian. `en` is the explicit opt-out, stored per device under
+`lyftr_language`.
+
+### Single points of truth
+
+- **`packages/shared/src/i18n/`** — `t`, `tPlural`, `useLanguage`, `hydrateLanguage`,
+  `setLanguage`, and the four dictionaries (`ru-web`, `ru-mobile`, `ru-shared`,
+  `ru-settings`) merged into one map. Both apps import it, so a fix lands on web and
+  mobile at once. Split by audience only: web-only copy in `ru-web`, mobile-only in
+  `ru-mobile`, anything both render in `ru-shared`.
+- **Counted nouns go through `tPlural`**, never a translated noun plus an `s`. Russian
+  agrees in three forms where English has two, so `{t('exercise')}{n === 1 ? '' : 's'}`
+  rendered "3 упражнениеs" on every program card. The key carries both English forms
+  (`'{count} set|{count} sets'`), the Russian entry carries three.
+- **Dates go through `formatLocalized`** (`packages/shared/src/utils/dateUtils.ts`), which
+  reorders the day-after-month patterns and supplies Russian month names. Bare `format()`
+  from date-fns is for `yyyy-MM-dd` / `yyyy-MM` *keys* only — never for a label.
+- **Coverage is guarded per app**: `web/src/i18n.guard.test.ts` and
+  `mobile/src/lib/i18nCoverage.guard.test.ts`, both over
+  `packages/shared/src/testing/i18nKeys.ts`. Two files rather than one because CI gates
+  `shared:test` on the *mobile* paths filter — a web-only change never runs it, so a
+  single shared guard would not see a new web screen.
+
+### Gotchas
+
+- **Never call `t()` at module scope.** It runs at import, which is before
+  `hydrateLanguage` has read the saved preference, and it never runs again — so the label
+  is frozen in whatever language the import happened to see. A module-level options array
+  keeps canonical English and the screen translates it where it renders
+  (`options={TABS.map(o => ({ ...o, label: t(o.label) }))}`). A **default parameter** is
+  fine: it is evaluated per call.
+- **A language change re-renders from the root.** `App.tsx` (web) and `app/_layout.tsx`
+  (mobile) subscribe with `useLanguage()`; that is the only subscription, and it is what
+  makes every `t()` below them re-run. A component memoised away from that root would
+  keep the old language.
+- **A key assembled at runtime is invisible to the guards.** `t(label)` over a nav array,
+  `t(MEAL_LABELS[meal])`, `t(o.label)` — the dictionary entry is yours to remember.
+- **A language names itself.** `Русский` and `English` are never translated.
+- **e2e is pinned to English.** `web/e2e/fixtures.ts` sets `lyftr_language` to `en` in an
+  init script, so the existing specs keep asserting English copy. A spec that imports
+  `test` from `@playwright/test` directly rather than from `fixtures` has to do it itself
+  (`auth.spec.ts` does).
+- **In JSX an attribute needs braces** — `label={t('Reps')}`, not `label=t('Reps')`.
+
+---
+
 ## Failing Requests — read before touching the API client
 
 **The rule: every request settles, and only the server may end a session.**

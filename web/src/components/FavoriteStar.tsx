@@ -1,4 +1,5 @@
 import { Star } from 'lucide-react'
+import { t } from '@lyftr/shared'
 
 // Shared by the food rows, the food detail header and the diary so they cannot drift.
 // aria-pressed carries the toggle state that the fill conveys visually.
@@ -16,7 +17,7 @@ export default function FavoriteStar(
       onClick={onClick}
       disabled={busy}
       aria-pressed={favorited}
-      aria-label={favorited ? `Remove ${name} from Favorites` : `Add ${name} to Favorites`}
+      aria-label={favorited ? t('Remove {name} from Favorites', { name }) : t('Add {name} to Favorites', { name })}
       className={`${box} flex items-center justify-center rounded-lg flex-shrink-0 transition-colors hover:bg-surface-muted active:scale-95 disabled:opacity-40 ${favorited ? 'text-brand-500' : 'text-tx-muted'}`}
     >
       <Star className={icon} fill={favorited ? 'currentColor' : 'none'} strokeWidth={2.2} />

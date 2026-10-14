@@ -1,3 +1,4 @@
+import { t } from '@lyftr/shared'
 import { router } from 'expo-router'
 import { Plus } from 'lucide-react-native'
 import { IconButton, ListScreenSkeleton } from '../ui'
@@ -10,13 +11,13 @@ import { IconButton, ListScreenSkeleton } from '../ui'
 export function ProgramsSkeleton() {
   return (
     <ListScreenSkeleton
-      title="Programs"
-      subtitle="Reusable workout templates"
+      title={t("Programs")}
+      subtitle={t("Reusable workout templates")}
       statCount={2}
       action={
         <IconButton
           icon={Plus}
-          label="New Program"
+          label={t("New Program")}
           variant="solid"
           size="md"
           onPress={() => router.push('/programs/new')}

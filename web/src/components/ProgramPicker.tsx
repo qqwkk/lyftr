@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { X, BookOpen, ChevronRight, Dumbbell, AlertCircle, Moon } from 'lucide-react'
 import { programAPI } from '../services/api'
-import { apiErrorMessage, workoutDays, dayLabel, todaysDay, types } from '@lyftr/shared'
+import { apiErrorMessage, workoutDays, dayLabel, todaysDay, types, tPlural, t } from '@lyftr/shared'
 
 interface Props {
   onSelect: (program: types.Program, day: types.ProgramDay) => void
@@ -21,7 +21,7 @@ export default function ProgramPicker({ onSelect, onClose }: Props) {
   useEffect(() => {
     programAPI.list()
       .then(data => setPrograms(data || []))
-      .catch(err => setError(apiErrorMessage(err, "Couldn't load your programs.")))
+      .catch(err => setError(apiErrorMessage(err, t("Couldn't load your programs."))))
       .finally(() => setLoading(false))
   }, [])
 
@@ -33,7 +33,7 @@ export default function ProgramPicker({ onSelect, onClose }: Props) {
   }
 
   const title = dayPickFor ? dayPickFor.name : 'Load from Program'
-  const subtitle = dayPickFor ? 'Pick a day to pre-fill exercises' : 'Pick a program to pre-fill exercises'
+  const subtitle = dayPickFor ? t('Pick a day to pre-fill exercises') : t('Pick a program to pre-fill exercises')
 
   // Portalled to document.body like every other overlay here (ExercisePicker,
   // ConfirmSheet, QuickWeighInSheet, BarcodeScanner, Toast). Rendered inline it
@@ -59,7 +59,7 @@ export default function ProgramPicker({ onSelect, onClose }: Props) {
           {loading ? (
             <div className="flex items-center justify-center p-8 text-tx-muted text-sm">
               <BookOpen className="w-5 h-5 mr-2 animate-pulse text-brand-500" />
-              Loading programs…
+              {t('Loading programs…')}
             </div>
           ) : error ? (
             <div className="flex items-center gap-2 p-4 text-error-400 text-sm">
@@ -91,10 +91,10 @@ export default function ProgramPicker({ onSelect, onClose }: Props) {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-tx-primary truncate flex items-center gap-1.5">
                           {dayLabel(day, day.order_index)}
-                          {isToday && <span className="text-[10px] font-bold text-brand-400 bg-brand-500/15 px-1.5 py-0.5 rounded-full">TODAY</span>}
+                          {isToday && <span className="text-[10px] font-bold text-brand-400 bg-brand-500/15 px-1.5 py-0.5 rounded-full">{t("TODAY")}</span>}
                         </p>
                         <span className="text-xs text-tx-muted">
-                          {(day.exercises ?? []).length} exercise{(day.exercises ?? []).length === 1 ? '' : 's'}
+                          {tPlural((day.exercises ?? []).length, '{count} exercise|{count} exercises')}
                         </span>
                       </div>
                       <ChevronRight className="w-4 h-4 text-tx-muted flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -106,8 +106,8 @@ export default function ProgramPicker({ onSelect, onClose }: Props) {
           ) : programs.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center">
               <BookOpen className="w-8 h-8 text-tx-muted mb-2 opacity-50" />
-              <p className="text-sm text-tx-muted">No programs yet</p>
-              <p className="text-xs text-tx-muted mt-1">Create a program first</p>
+              <p className="text-sm text-tx-muted">{t("No programs yet")}</p>
+              <p className="text-xs text-tx-muted mt-1">{t("Create a program first")}</p>
             </div>
           ) : (
             <div className="divide-y divide-surface-border">
@@ -129,10 +129,10 @@ export default function ProgramPicker({ onSelect, onClose }: Props) {
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-xs text-tx-muted">
                           <Dumbbell className="w-3 h-3 inline mr-1" />
-                          {days.length === 0 ? 'No exercises yet' : `${days.length} workout day${days.length === 1 ? '' : 's'}`}
+                          {days.length === 0 ? t('No exercises yet') : tPlural(days.length, '{count} workout day|{count} workout days')}
                         </span>
                         {(p.days ?? []).some(d => d.is_rest_day) && (
-                          <span className="text-xs text-tx-muted"><Moon className="w-3 h-3 inline mr-0.5" />rest days</span>
+                          <span className="text-xs text-tx-muted"><Moon className="w-3 h-3 inline mr-0.5" />{t("rest days")}</span>
                         )}
                       </div>
                     </div>

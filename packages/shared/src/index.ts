@@ -3,6 +3,7 @@
 // and pure utilities. NO UI and NO platform APIs (storage is injected).
 
 export * from './types'
+export * from './i18n'
 // Also grouped under a `types` namespace. Mobile imports domain types by name; web
 // reads them as `types.Workout` at ~28 call sites. Both spellings resolve to the same
 // declarations, so neither app has to adopt the other's import style to share them.

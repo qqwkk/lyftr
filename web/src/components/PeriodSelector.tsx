@@ -1,3 +1,5 @@
+import { t } from '@lyftr/shared'
+
 interface PeriodSelectorProps<T extends string> {
   options: readonly T[]
   value: T
@@ -17,7 +19,7 @@ export default function PeriodSelector<T extends string>({ options, value, onCha
               : 'text-tx-muted hover:text-tx-primary'
           }`}
         >
-          {opt}
+          {t(opt)}
         </button>
       ))}
     </div>

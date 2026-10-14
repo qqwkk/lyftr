@@ -3,7 +3,7 @@ import { Pressable, Text, View } from 'react-native'
 import { router } from 'expo-router'
 import * as Haptics from 'expo-haptics'
 import { ChevronRight, MoreVertical, Scale, TrendingDown, TrendingUp } from 'lucide-react-native'
-import { useAsyncAction, displayWeight, entryDay, weightShort, type WeightLog, formatDay } from '@lyftr/shared'
+import { useAsyncAction, displayWeight, entryDay, weightShort, type WeightLog, formatDay, t } from '@lyftr/shared'
 import { ActionSheet, AppText, Card, ConfirmSheet, IconButton, deleteAction, deleteConfirmProps, editAction } from '../ui'
 import { useTheme } from '../../theme/useTheme'
 import { client } from '../../lib/lyftr'
@@ -39,7 +39,7 @@ export function WeightEntryRow({ item, next, unit, onDeleted }: Props) {
     await client.weightAPI.delete(item.id)
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {})
     onDeleted(item.id)
-  }, 'Failed to delete entry')
+  }, t('Failed to delete entry'))
 
   return (
     <Pressable onPress={() => router.push(`/weight/${item.id}`)} className="mb-2 active:scale-[0.99]">
@@ -102,7 +102,7 @@ export function WeightEntryRow({ item, next, unit, onDeleted }: Props) {
       />
 
       <ConfirmSheet
-        {...deleteConfirmProps({ title: 'Delete Entry?', subject: `${dateLabel} · ${Math.round(displayW)} ${wUnit}` })}
+        {...deleteConfirmProps({ title: t('Delete Entry?'), subject: `${dateLabel} · ${Math.round(displayW)} ${wUnit}` })}
         open={confirming}
         busy={remove.busy}
         error={remove.error}

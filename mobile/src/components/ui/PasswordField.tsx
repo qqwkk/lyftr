@@ -6,6 +6,7 @@ import type { RuleState } from '@lyftr/shared'
 import { useTheme } from '../../theme/useTheme'
 import { Field } from './Field'
 import { AppText } from './Typography'
+import { t } from '@lyftr/shared'
 
 // One rule, shown while typing. Mirrors web's `Rule` in web/src/components/ui/PasswordField —
 // same three states, same colours, and the state itself comes from the shared
@@ -68,7 +69,7 @@ export function PasswordField({ label, value, onChangeText, textContentType, chi
             onPress={() => setVisible((v) => !v)}
             hitSlop={10}
             accessibilityRole="button"
-            accessibilityLabel={`${visible ? 'Hide' : 'Show'} ${label.toLowerCase()}`}
+            accessibilityLabel={`${visible ? t('Hide') : t('Show')} ${label.toLowerCase()}`}
           >
             {visible
               ? <EyeOff size={18} color={colors.txMuted} strokeWidth={2} />

@@ -1,4 +1,4 @@
-import { useAsyncAction } from '@lyftr/shared'
+import { t, useAsyncAction } from '@lyftr/shared'
 import { useState } from 'react'
 import { Image, Pressable, View } from 'react-native'
 import * as Haptics from 'expo-haptics'
@@ -17,7 +17,7 @@ function MealChip({ meal }: { meal: Meal }) {
   return (
     <View className="flex-row items-center gap-1 rounded-full border px-2 py-0.5" style={{ backgroundColor: `${color}1A`, borderColor: `${color}40` }}>
       <Icon size={11} color={color} />
-      <AppText variant="caption" style={{ fontSize: 10, color, fontWeight: '700' }}>{MEAL_LABELS[meal]}</AppText>
+      <AppText variant="caption" style={{ fontSize: 10, color, fontWeight: '700' }}>{t(MEAL_LABELS[meal])}</AppText>
     </View>
   )
 }
@@ -50,7 +50,7 @@ export function FoodEntryRow({ entry, first, onPress, onEdit, onDeleted }: Props
     await client.foodAPI.delete(entry.id)
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {})
     onDeleted(entry.id)
-  }, 'Failed to delete entry')
+  }, t('Failed to delete entry'))
 
   const Thumb = ({ size = 44 }: { size?: number }) =>
     entry.image_url ? (
@@ -70,17 +70,17 @@ export function FoodEntryRow({ entry, first, onPress, onEdit, onDeleted }: Props
     <View className="mt-1 flex-row flex-wrap items-center gap-x-3 gap-y-1">
       <View className="flex-row items-center gap-1">
         <Flame size={12} color={colors.txMuted} />
-        <AppText variant="caption" color="secondary" style={{ fontWeight: '600', fontVariant: ['tabular-nums'] }}>{Math.round(entry.calories)} kcal</AppText>
+        <AppText variant="caption" color="secondary" style={{ fontWeight: '600', fontVariant: ['tabular-nums'] }}>{Math.round(entry.calories)} {t("kcal")}</AppText>
       </View>
       {([
-        ['P', entry.protein, MACRO_TEXT.protein],
-        ['C', entry.carbs, MACRO_TEXT.carbs],
-        ['F', entry.fat, MACRO_TEXT.fat],
+        [t('Protein'), entry.protein, MACRO_TEXT.protein],
+        [t('Carbs'), entry.carbs, MACRO_TEXT.carbs],
+        [t('Fat'), entry.fat, MACRO_TEXT.fat],
       ] as const).map(([label, value, color]) => (
         <View key={label} className="flex-row items-center gap-1">
           <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: color }} />
-          <AppText variant="caption" color="secondary" style={{ fontVariant: ['tabular-nums'] }}>{value.toFixed(0)}g</AppText>
-          <AppText variant="caption" color="muted">{label}</AppText>
+          <AppText variant="caption" color="secondary" style={{ fontVariant: ['tabular-nums'] }}>{value.toFixed(0)}{t("g")}</AppText>
+          <AppText variant="caption" color="muted">{label.charAt(0)}</AppText>
         </View>
       ))}
       {entry.servings !== 1 ? <AppText variant="caption" color="muted">× {entry.servings}</AppText> : null}
@@ -130,7 +130,7 @@ export function FoodEntryRow({ entry, first, onPress, onEdit, onDeleted }: Props
       />
 
       <ConfirmSheet
-        {...deleteConfirmProps({ title: 'Delete entry?', subject: `"${entry.name}"` })}
+        {...deleteConfirmProps({ title: t('Delete entry?'), subject: `"${entry.name}"` })}
         open={confirming}
         busy={remove.busy}
         error={remove.error}

@@ -3,7 +3,7 @@ import { Text, View, Linking } from 'react-native'
 import { Link } from 'expo-router'
 import { AuthScaffold } from '../../src/components/AuthScaffold'
 import { IconInput, GradientButton, SecondaryButton, AuthDivider, AuthError, ServerRow, Footer } from '../../src/components/authui'
-import { registrationOpen } from '@lyftr/shared'
+import { registrationOpen, t } from '@lyftr/shared'
 import { useAuthStore, useServerInfo } from '../../src/lib/lyftr'
 import { useTheme } from '../../src/theme/useTheme'
 
@@ -35,8 +35,8 @@ export default function Login() {
   // Validate only on submit (not while typing): the browser's `required`/`type=email`
   // equivalent, surfaced as an error after the user presses Sign in.
   const submit = async () => {
-    if (!EMAIL_RE.test(email.trim())) { setLocalError('Enter a valid email address'); return }
-    if (!password) { setLocalError('Enter your password'); return }
+    if (!EMAIL_RE.test(email.trim())) { setLocalError(t('Enter a valid email address')); return }
+    if (!password) { setLocalError(t('Enter your password')); return }
     setLocalError(null)
     try { await login(email.trim(), password) } catch {}
   }
@@ -47,42 +47,42 @@ export default function Login() {
   const shownError = localError || error
 
   return (
-    <AuthScaffold heading="Welcome back" subtitle="Sign in to continue training.">
+    <AuthScaffold heading={t("Welcome back")} subtitle={t("Sign in to continue training.")}>
       <ServerRow />
       <IconInput
-        label="Email"
+        label={t("Email")}
         icon="mail"
         value={email}
         onChangeText={onChange(setEmail)}
         keyboardType="email-address"
-        placeholder="you@example.com"
+        placeholder={t("you@example.com")}
       />
       <IconInput
-        label="Password"
+        label={t("Password")}
         icon="lock"
         password
         value={password}
         onChangeText={onChange(setPassword)}
-        placeholder="••••••••"
+        placeholder={t("••••••••")}
       />
       {shownError ? <AuthError message={shownError} /> : null}
-      <GradientButton title="Sign in" onPress={submit} loading={loading} />
+      <GradientButton title={t("Sign in")} onPress={submit} loading={loading} />
       <AuthDivider />
-      <SecondaryButton title="Try demo account" hint="no sign-up" onPress={demo} />
+      <SecondaryButton title={t("Try demo account")} hint={t("no sign-up")} onPress={demo} />
       {/* A closed server says so instead of offering a link that 403s on submit — but it
           does still say so, rather than leaving someone who came to sign up hunting for a
           button that is not there (mastodon/mastodon#21556). */}
       <Footer>
         {isOpen ? (
           <View style={{ flexDirection: 'row', gap: 5 }}>
-            <Text style={{ color: colors.txSecondary, fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: 14 }}>New here?</Text>
+            <Text style={{ color: colors.txSecondary, fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: 14 }}>{t("New here?")}</Text>
             <Link href="/register" style={{ color: accent, fontFamily: 'PlusJakartaSans_800ExtraBold', fontSize: 14 }}>
-              Create account
+              {t("Create account")}
             </Link>
           </View>
         ) : (
           <Text style={{ color: colors.txSecondary, fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: 14 }}>
-            This server is not accepting new accounts.
+            {t("This server is not accepting new accounts.")}
           </Text>
         )}
       </Footer>

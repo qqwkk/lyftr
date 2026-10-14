@@ -1,3 +1,4 @@
+import { t } from '@lyftr/shared'
 import { View } from 'react-native'
 import { Card, PageHeader, Screen, Skeleton } from '../ui'
 
@@ -10,7 +11,7 @@ export function NutritionSkeleton() {
   return (
     <Screen>
       <View className="gap-4 py-4">
-        <PageHeader title="Nutrition" subtitle="Macros & meals" action={<Skeleton width={92} height={32} radius={10} />} />
+        <PageHeader title={t("Nutrition")} subtitle={t("Macros & meals")} action={<Skeleton width={92} height={32} radius={10} />} />
 
         {/* Diary / Trends switch */}
         <Skeleton height={44} radius={12} />

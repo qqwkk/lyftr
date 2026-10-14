@@ -1,3 +1,4 @@
+import { t as translate } from '@lyftr/shared'
 import { useEffect } from 'react'
 import { View } from 'react-native'
 import Animated, {
@@ -62,7 +63,7 @@ function RepDot({ index, mutedColor }: { index: number; mutedColor: string }) {
   )
 }
 
-export function Loading({ sublabel = 'Loading' }: { sublabel?: string }) {
+export function Loading({ sublabel = translate('Loading') }: { sublabel?: string }) {
   const { colors, brand } = useTheme()
   const t = useSharedValue(0)
 
@@ -141,7 +142,7 @@ export function Loading({ sublabel = 'Loading' }: { sublabel?: string }) {
 
       {/* Wordmark */}
       <View className="items-center">
-        <AppText variant="heading" className="tracking-tight">lyftr</AppText>
+        <AppText variant="heading" className="tracking-tight">{translate('lyftr')}</AppText>
         <AppText variant="label" color="muted" className="mt-2 uppercase" style={{ letterSpacing: 3 }}>
           {sublabel}
         </AppText>

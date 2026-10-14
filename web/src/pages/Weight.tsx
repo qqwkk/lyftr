@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { TrendingDown, TrendingUp, Minus, Plus, Calendar, Sunrise, AlertCircle, ChevronRight, Scale, Activity, ArrowDown, ArrowUp, X } from 'lucide-react'
-import { format } from 'date-fns'
 import { Link } from 'react-router-dom'
 import { HelpTip } from '../components/Tooltip'
 import Loading from '../components/Loading'
@@ -9,7 +8,7 @@ import DateInput from '../components/ui/DateInput'
 import PeriodSelector from '../components/PeriodSelector'
 import StepperTile from '../components/ui/StepperTile'
 import NumberField from '../components/ui/NumberField'
-import { apiErrorMessage, useAsyncAction, BODYWEIGHT_STEP, clampStep, todayStr, daysAgoStr, dayToInstant, entryDay, dayToLocalDate, types, formatDay } from '@lyftr/shared'
+import { apiErrorMessage, useAsyncAction, BODYWEIGHT_STEP, clampStep, todayStr, daysAgoStr, dayToInstant, entryDay, dayToLocalDate, types, formatDay, formatLocalized, t } from '@lyftr/shared'
 import { useServerInfiniteList } from '../hooks/useServerInfiniteList'
 import { ErrorState, ListError, StatFailure } from '../components/ui'
 import { weightAPI } from '../services/api'
@@ -123,7 +122,7 @@ function TrendChart({ points, wUnit }: { points: ChartPoint[]; wUnit: string }) 
             <p className="font-bold tabular-nums text-tx-primary text-sm">
               {round1(activePoint.weight)} <span className="font-normal text-tx-muted">{wUnit}</span>
             </p>
-            <p className="text-tx-muted mt-0.5">{format(activePoint.date, 'MMM d, yyyy')}</p>
+            <p className="text-tx-muted mt-0.5">{formatLocalized(activePoint.date, 'MMM d, yyyy')}</p>
           </div>
         </div>
       )}
@@ -187,10 +186,10 @@ function TrendChart({ points, wUnit }: { points: ChartPoint[]; wUnit: string }) 
 
         {/* Date range labels */}
         <text x={PL} y={H - 10} fontSize={12} fill="var(--color-tx-muted)" fillOpacity={0.6} textAnchor="start">
-          {format(points[0].date, 'MMM d')}
+          {formatLocalized(points[0].date, 'MMM d')}
         </text>
         <text x={W - PR} y={H - 10} fontSize={12} fill="var(--color-tx-muted)" fillOpacity={0.6} textAnchor="end">
-          {format(points[points.length - 1].date, 'MMM d')}
+          {formatLocalized(points[points.length - 1].date, 'MMM d')}
         </text>
 
         {/* Hit area — only over chart region, not y-axis */}
@@ -255,7 +254,7 @@ export default function Weight() {
         setChartPeriod(period)
         setChartError(null)
       })
-      .catch(err => { if (!cancelled) setChartError(apiErrorMessage(err, "Couldn't load your weight trend.")) })
+      .catch(err => { if (!cancelled) setChartError(apiErrorMessage(err, t("Couldn't load your weight trend."))) })
       .finally(() => { if (!cancelled) setChartLoading(false) })
     return () => { cancelled = true }
   }, [period, retryKey])
@@ -264,7 +263,7 @@ export default function Weight() {
     let cancelled = false
     weightAPI.stats()
       .then(data => { if (!cancelled) { setStats(data); setStatsError(null) } })
-      .catch(err => { if (!cancelled) setStatsError(apiErrorMessage(err, "Couldn't load your weight stats.")) })
+      .catch(err => { if (!cancelled) setStatsError(apiErrorMessage(err, t("Couldn't load your weight stats."))) })
     return () => { cancelled = true }
   }, [retryKey])
 
@@ -323,7 +322,7 @@ export default function Weight() {
         const days = PERIOD_DAYS[period]
         const from = days != null ? daysAgoStr(days) : undefined
         weightAPI.list({ limit: 1000, from }).then(data => setChartLogs(data || [])).catch(() => {})
-  }, 'Failed to log weight')
+  }, t('Failed to log weight'))
 
   const handleLog = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -425,10 +424,10 @@ export default function Weight() {
   if (everythingFailed) {
     return (
       <div className="space-y-5 animate-slide-up">
-        <PageHeader title="Weight" subtitle="Track your body weight over time" />
+        <PageHeader title={t("Weight")} subtitle={t("Track your body weight over time")} />
         <ErrorState
           size="page"
-          title="Couldn't load your weight"
+          title={t("Couldn't load your weight")}
           message={listError ?? chartError ?? statsError ?? ''}
           onRetry={retryAll}
         />
@@ -439,8 +438,8 @@ export default function Weight() {
   return (
     <div className="space-y-5 animate-slide-up">
       <PageHeader
-        title="Weight"
-        subtitle="Track your body weight over time"
+        title={t("Weight")}
+        subtitle={t("Track your body weight over time")}
         action={<span className="badge-brand"><Calendar className="w-3 h-3" /> {wUnit}</span>}
       />
 
@@ -456,7 +455,7 @@ export default function Weight() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Scale className="w-4 h-4 text-brand-500" />
-            <h2 className="section-title">Log Weight</h2>
+            <h2 className="section-title">{t("Log Weight")}</h2>
           </div>
           {items.length > 0 && (
             <span className="text-[11px] text-tx-muted">last: {displayWeight(items[0].weight, settings.weight_unit)} {wUnit}</span>
@@ -470,18 +469,18 @@ export default function Weight() {
             step={BODYWEIGHT_STEP}
             onStep={d => setNewWeight(String(clampStep(parseFloat(newWeight) || 0, d, { max: maxWeight(settings.weight_unit) })))}
           >
-            <NumberField value={newWeight} onChange={setNewWeight} aria-label="Weight" />
+            <NumberField value={newWeight} onChange={setNewWeight} aria-label={t("Weight")} />
           </StepperTile>
 
           {showNotes ? (
             <div className="space-y-2 bg-surface-overlay border border-surface-border rounded-xl p-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-tx-secondary">Date &amp; note</span>
+                <span className="text-xs font-medium text-tx-secondary">{t("Date & note")}</span>
                 <button
                   type="button"
                   onClick={() => setShowNotes(false)}
                   className="p-1 hover:bg-surface-muted rounded-lg transition-colors"
-                  aria-label="Collapse"
+                  aria-label={t("Collapse")}
                 >
                   <X className="w-3.5 h-3.5 text-tx-muted" />
                 </button>
@@ -491,7 +490,7 @@ export default function Weight() {
                 type="text"
                 value={newNotes}
                 onChange={e => setNewNotes(e.target.value)}
-                placeholder="Note — e.g. morning, post-run"
+                placeholder={t("Note — e.g. morning, post-run")}
                 maxLength={200}
                 className="input"
               />
@@ -503,7 +502,7 @@ export default function Weight() {
               className="w-full flex items-center justify-center gap-2 py-2.5 text-sm text-tx-secondary bg-surface-overlay border border-surface-border rounded-xl hover:bg-surface-muted active:scale-[0.98] transition-all"
             >
               <Calendar className="w-4 h-4 text-tx-muted" />
-              Add date &amp; note
+              {t('Add date & note')}
             </button>
           )}
 
@@ -518,7 +517,7 @@ export default function Weight() {
                     onClick={() => setShowDuplicateWarning(false)}
                     className="px-3 py-1 rounded-lg text-xs font-medium bg-surface-overlay border border-surface-border text-tx-secondary hover:text-tx-primary transition-colors"
                   >
-                    Cancel
+                    {t('Cancel')}
                   </button>
                   <button
                     type="button"
@@ -529,7 +528,7 @@ export default function Weight() {
                     }}
                     className="px-3 py-1 rounded-lg text-xs font-medium bg-amber-500/20 border border-amber-500/30 text-amber-300 hover:bg-amber-500/30 transition-colors"
                   >
-                    Log Anyway
+                    {t('Log Anyway')}
                   </button>
                 </div>
               </div>
@@ -545,7 +544,7 @@ export default function Weight() {
           </button>
           <p className="input-help flex items-center justify-center gap-1.5 text-center">
             <Sunrise className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-            Best logged in the morning, after the bathroom
+            {t('Best logged in the morning, after the bathroom')}
           </p>
         </form>
       </div>
@@ -558,20 +557,20 @@ export default function Weight() {
           // weighed themselves, and invited them to fix it against a server that was down.
           <ErrorState
             size="section"
-            title="Couldn't load your weight"
+            title={t("Couldn't load your weight")}
             message={listError ?? chartError ?? statsError ?? ''}
             onRetry={retryAll}
           />
         ) : items.length === 0 ? (
           <div className="text-center py-2">
-            <p className="stat-label mb-1">Current Weight</p>
-            <p className="text-tx-muted text-sm">The scale doesn't know you exist yet. Fix that.</p>
+            <p className="stat-label mb-1">{t("Current Weight")}</p>
+            <p className="text-tx-muted text-sm">{t("The scale doesn't know you exist yet. Fix that.")}</p>
           </div>
         ) : (
           <>
             <div className="flex items-start justify-between">
               <div>
-                <p className="stat-label mb-2">Current Weight</p>
+                <p className="stat-label mb-2">{t("Current Weight")}</p>
                 <div className="flex items-end gap-2">
                   <span className="stat-value text-5xl">{currentKnown ? current : '—'}</span>
                   {currentKnown && <span className="text-tx-muted text-lg mb-1">{wUnit}</span>}
@@ -594,9 +593,9 @@ export default function Weight() {
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'Avg', value: avg, tip: 'Average weight for selected period', icon: Activity, color: 'text-brand-400' },
-          { label: 'Low', value: min, tip: 'Lowest recorded weight in period', icon: ArrowDown, color: 'text-success-400' },
-          { label: 'High', value: max, tip: 'Highest recorded weight in period', icon: ArrowUp, color: 'text-error-400' },
+          { label: t('Avg'), value: avg, tip: t('Average weight for selected period'), icon: Activity, color: 'text-brand-400' },
+          { label: t('Low'), value: min, tip: t('Lowest recorded weight in period'), icon: ArrowDown, color: 'text-success-400' },
+          { label: t('High'), value: max, tip: t('Highest recorded weight in period'), icon: ArrowUp, color: 'text-error-400' },
         ].map(s => (
           <div key={s.label} className="card p-4">
             <div className="flex items-center gap-1.5 mb-2">
@@ -607,7 +606,7 @@ export default function Weight() {
             {chartPending ? (
               <span className="inline-block h-6 w-14 rounded bg-surface-muted animate-pulse align-middle" />
             ) : figuresFailed ? (
-              <StatFailure label={`Couldn't load ${s.label.toLowerCase()} weight`} />
+              <StatFailure label={t("Couldn't load {label} weight", { label: s.label.toLowerCase() })} />
             ) : (
               <>
                 <span className="stat-value text-xl">{aggregatesUnknown ? '—' : Math.round(s.value)}</span>
@@ -625,29 +624,29 @@ export default function Weight() {
       {figuresStale && (
         <div className="flex items-center gap-2 px-1 text-xs text-tx-muted" role="status">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
-          <span>Couldn't refresh these — showing the last we loaded.</span>
-          <button onClick={retryAll} className="underline hover:text-tx-primary">Try again</button>
+          <span>{t("Couldn't refresh these — showing the last we loaded.")}</span>
+          <button onClick={retryAll} className="underline hover:text-tx-primary">{t("Try again")}</button>
         </div>
       )}
 
       {/* Chart + period selector */}
       <div className="card p-5">
         <div className="flex items-center justify-between mb-4 gap-2">
-          <h2 className="section-title">Trend</h2>
+          <h2 className="section-title">{t("Trend")}</h2>
           <PeriodSelector options={PERIODS} value={period} onChange={setPeriod} />
         </div>
 
         {chartPending ? (
-          <div className="h-44 rounded-xl bg-surface-muted animate-pulse" role="status" aria-label="Loading your trend" />
+          <div className="h-44 rounded-xl bg-surface-muted animate-pulse" role="status" aria-label={t("Loading your trend")} />
         ) : chartPoints.length === 0 && chartError ? (
-          <ErrorState size="section" title="Couldn't load your trend" message={chartError} onRetry={retryAll} />
+          <ErrorState size="section" title={t("Couldn't load your trend")} message={chartError} onRetry={retryAll} />
         ) : chartPoints.length === 0 ? (
           <div className="flex items-center justify-center h-44 text-tx-muted text-sm">
-            No data for this period
+            {t('No data for this period')}
           </div>
         ) : chartPoints.length === 1 ? (
           <div className="flex items-center justify-center h-44 text-tx-muted text-sm">
-            Log another entry to see the trend
+            {t('Log another entry to see the trend')}
           </div>
         ) : (
           <TrendChart points={chartPoints} wUnit={wUnit} />
@@ -656,11 +655,11 @@ export default function Weight() {
 
       {/* History — the error sits outside the items guard on purpose: a failed first
           page leaves items empty, and the guard alone rendered nothing whatsoever. */}
-      {listError && <ListError subject="your weight history" message={listError} onRetry={retryList} />}
+      {listError && <ListError subject={t("your weight history")} message={listError} onRetry={retryList} />}
 
       {items.length > 0 && (
         <>
-          <h2 className="section-title px-1">History</h2>
+          <h2 className="section-title px-1">{t("History")}</h2>
           <div className="space-y-2">
             {items.map((entry, i) => {
               const next = items[i + 1]
@@ -705,7 +704,7 @@ export default function Weight() {
           </div>
           <div ref={sentinelRef} />
           {hasMore && listLoading && (
-            <p className="text-center text-xs text-tx-muted py-2">Loading more…</p>
+            <p className="text-center text-xs text-tx-muted py-2">{t("Loading more…")}</p>
           )}
         </>
       )}

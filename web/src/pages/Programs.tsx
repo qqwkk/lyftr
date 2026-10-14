@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { format } from 'date-fns'
 import { BookOpen, Plus, Dumbbell, Edit2, Trash2, Search, Play, ChevronRight, MoreVertical, Moon, Sun } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Loading from '../components/Loading'
@@ -9,12 +8,8 @@ import { useServerInfiniteList } from '../hooks/useServerInfiniteList'
 import { ErrorState, ListError } from '../components/ui'
 import { programAPI } from '../services/api'
 import { useWorkoutSession } from '../stores/workoutSession'
-import { useAsyncAction, types } from '@lyftr/shared'
+import { useAsyncAction, types, tPlural, formatLocalized, t, todaysDay, dayLabel, isDayStartable, programExerciseCount, programSetCount, sessionNameForDay, activeSessionExercisesForDay, allExercises } from '@lyftr/shared'
 
-import {
-  todaysDay, dayLabel, isDayStartable, programExerciseCount, programSetCount, sessionNameForDay,
-  activeSessionExercisesForDay, allExercises,
-} from '@lyftr/shared'
 
 function ProgramCard({
   program,
@@ -64,7 +59,7 @@ function ProgramCard({
   const remove = useAsyncAction(async () => {
     await programAPI.delete(program.id)
     onDelete(program.id)
-  }, 'Failed to delete program')
+  }, t('Failed to delete program'))
 
   if (confirming) {
     return (
@@ -76,7 +71,7 @@ function ProgramCard({
             </div>
             <div>
               <p className="text-sm font-semibold text-tx-primary">Delete "{program.name}"?</p>
-              <p className="text-xs text-tx-muted">This cannot be undone</p>
+              <p className="text-xs text-tx-muted">{t("This cannot be undone")}</p>
               {remove.error && <p className="text-xs text-error-400 mt-1">{remove.error}</p>}
             </div>
           </div>
@@ -85,7 +80,7 @@ function ProgramCard({
               onClick={() => setConfirming(false)}
               className="px-3 py-1.5 text-xs bg-surface-muted hover:bg-surface-muted/80 text-tx-secondary rounded-lg transition-colors font-medium"
             >
-              Cancel
+              {t('Cancel')}
             </button>
             <button
               onClick={() => { void remove.run() }}
@@ -93,7 +88,7 @@ function ProgramCard({
               className="px-3 py-1.5 text-xs bg-error-500 hover:bg-error-600 disabled:opacity-50 text-white rounded-lg transition-colors font-medium flex items-center gap-1"
             >
               <Trash2 className="w-3 h-3" />
-              {remove.busy ? 'Deleting…' : 'Delete'}
+              {remove.busy ? t('Deleting…') : t('Delete')}
             </button>
           </div>
         </div>
@@ -127,16 +122,16 @@ function ProgramCard({
           )}
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-tx-primary truncate">{program.name}</p>
-            <p className="text-xs text-tx-muted mt-0.5 whitespace-nowrap">{format(new Date(program.created_at), 'MMM d, yyyy')}</p>
+            <p className="text-xs text-tx-muted mt-0.5 whitespace-nowrap">{formatLocalized(new Date(program.created_at), 'MMM d, yyyy')}</p>
             <div className="flex items-center gap-x-2 mt-0.5 min-w-0 overflow-hidden">
-              <span className="text-xs text-tx-muted whitespace-nowrap">{totalExercises} exercise{totalExercises === 1 ? '' : 's'}</span>
+              <span className="text-xs text-tx-muted whitespace-nowrap">{tPlural(totalExercises, '{count} exercise|{count} exercises')}</span>
               <span className="text-tx-muted/40 text-xs">·</span>
-              <span className="text-xs text-tx-muted whitespace-nowrap">{totalSets} set{totalSets === 1 ? '' : 's'}</span>
+              <span className="text-xs text-tx-muted whitespace-nowrap">{tPlural(totalSets, '{count} set|{count} sets')}</span>
               {dayCount > 1 && today && (
                 <>
                   <span className="text-tx-muted/40 text-xs">·</span>
                   {today.is_rest_day ? (
-                    <span className="text-xs text-tx-muted whitespace-nowrap flex items-center gap-1"><Moon className="w-3 h-3" />Rest today</span>
+                    <span className="text-xs text-tx-muted whitespace-nowrap flex items-center gap-1"><Moon className="w-3 h-3" />{t("Rest today")}</span>
                   ) : (
                     // Sun, not Dumbbell — Dumbbell already means "exercises" earlier on
                     // this same row; Sun/Moon reads as a natural due/rest pair instead.
@@ -155,7 +150,7 @@ function ProgramCard({
           <button
             onClick={e => { e.stopPropagation(); setMenuOpen(o => !o) }}
             className={`sm:hidden p-2 rounded-lg transition-colors ${menuOpen ? 'bg-surface-muted' : 'hover:bg-surface-muted'}`}
-            aria-label="Options"
+            aria-label={t("Options")}
           >
             <MoreVertical className="w-4 h-4 text-tx-muted" />
           </button>
@@ -169,7 +164,7 @@ function ProgramCard({
               />
               <div ref={portalRef} className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 bg-surface-overlay border border-surface-border/60 rounded-2xl shadow-2xl z-50 overflow-hidden">
                 <div className="px-4 pt-4 pb-3">
-                  <p className="text-[10px] font-semibold text-tx-muted uppercase tracking-wider text-center">Program</p>
+                  <p className="text-[10px] font-semibold text-tx-muted uppercase tracking-wider text-center">{t("Program")}</p>
                   <p className="text-sm font-semibold text-tx-primary text-center mt-0.5 truncate">{program.name}</p>
                 </div>
                 <div className="border-t border-surface-border/40 py-1.5">
@@ -180,7 +175,7 @@ function ProgramCard({
                     <div className="w-8 h-8 rounded-xl bg-brand-500/10 flex items-center justify-center flex-shrink-0">
                       <Play className="w-4 h-4 text-brand-500" />
                     </div>
-                    {canQuickStart ? 'Start Workout' : 'View Program'}
+                    {canQuickStart ? t('Start Workout') : t('View Program')}
                   </button>
                   <div className="mx-4 border-t border-surface-border/30" />
                   <button
@@ -190,7 +185,7 @@ function ProgramCard({
                     <div className="w-8 h-8 rounded-xl bg-brand-500/10 flex items-center justify-center flex-shrink-0">
                       <Edit2 className="w-4 h-4 text-brand-500" />
                     </div>
-                    Edit Program
+                    {t('Edit Program')}
                   </button>
                   <div className="mx-4 border-t border-surface-border/30" />
                   <button
@@ -200,7 +195,7 @@ function ProgramCard({
                     <div className="w-8 h-8 rounded-xl bg-error-500/10 flex items-center justify-center flex-shrink-0">
                       <Trash2 className="w-4 h-4 text-error-400" />
                     </div>
-                    Delete Program
+                    {t('Delete Program')}
                   </button>
                 </div>
                 <div className="border-t border-surface-border/40 p-3">
@@ -208,7 +203,7 @@ function ProgramCard({
                     onClick={e => { e.stopPropagation(); setMenuOpen(false) }}
                     className="w-full py-2.5 text-sm font-semibold text-tx-muted bg-surface-muted/60 hover:bg-surface-muted rounded-xl transition-colors"
                   >
-                    Cancel
+                    {t('Cancel')}
                   </button>
                 </div>
               </div>
@@ -226,7 +221,7 @@ function ProgramCard({
               className="p-2 hover:bg-surface-muted rounded-lg transition-colors">
               <Edit2 className="w-4 h-4 text-brand-500" />
             </button>
-            <button aria-label="Delete" onClick={e => { e.stopPropagation(); setConfirming(true) }}
+            <button aria-label={t("Delete")} onClick={e => { e.stopPropagation(); setConfirming(true) }}
               className="p-2 hover:bg-error-500/10 rounded-lg transition-colors">
               <Trash2 className="w-4 h-4 text-error-400" />
             </button>
@@ -266,10 +261,10 @@ export default function Programs() {
   if (listError && programs.length === 0) {
     return (
       <div className="space-y-5 animate-slide-up">
-        <PageHeader title="Programs" subtitle="Reusable workout templates" />
+        <PageHeader title={t("Programs")} subtitle={t("Reusable workout templates")} />
         <ErrorState
           size="page"
-          title="Couldn't load your programs"
+          title={t("Couldn't load your programs")}
           message={listError}
           onRetry={retryList}
         />
@@ -296,19 +291,19 @@ export default function Programs() {
   return (
     <div className="space-y-5 animate-slide-up">
       <PageHeader
-        title="Programs"
-        subtitle="Reusable workout templates"
+        title={t("Programs")}
+        subtitle={t("Reusable workout templates")}
         action={
           <button onClick={() => navigate('/programs/new')} className="btn-primary btn-sm">
-            <Plus className="w-4 h-4" /> New Program
+            <Plus className="w-4 h-4" /> {t('New Program')}
           </button>
         }
       />
 
       <div className="grid grid-cols-2 gap-3">
         {[
-          { label: 'Total', value: totalLabel, unit: 'programs', icon: BookOpen },
-          { label: 'Avg Exercises', value: avgLabel, unit: 'per program', icon: Dumbbell },
+          { label: t('Total'), value: totalLabel, unit: t('programs'), icon: BookOpen },
+          { label: t('Avg Exercises'), value: avgLabel, unit: t('per program'), icon: Dumbbell },
         ].map(s => (
           <div key={s.label} className="card p-4">
             <div className="flex items-center gap-1.5 mb-2">
@@ -328,7 +323,7 @@ export default function Programs() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="input pl-10"
-          placeholder="Search programs…"
+          placeholder={t("Search programs…")}
         />
       </div>
 
@@ -340,7 +335,7 @@ export default function Programs() {
             <div className="w-12 h-12 rounded-xl bg-surface-muted border border-surface-border flex items-center justify-center mb-4">
               <BookOpen className="w-6 h-6 text-tx-muted" />
             </div>
-            <p className="text-sm font-medium text-tx-primary mb-1">No programs found</p>
+            <p className="text-sm font-medium text-tx-primary mb-1">{t("No programs found")}</p>
             <p className="text-xs text-tx-muted">{search ? 'Try a different search' : 'Create a program to get started'}</p>
           </div>
         ) : (
@@ -354,9 +349,9 @@ export default function Programs() {
               />
             ))}
             <div ref={sentinelRef} />
-            {listError && <ListError subject="your programs" message={listError} onRetry={retryList} />}
+            {listError && <ListError subject={t("your programs")} message={listError} onRetry={retryList} />}
             {hasMore && loading && (
-              <p className="text-center text-xs text-tx-muted py-2">Loading more…</p>
+              <p className="text-center text-xs text-tx-muted py-2">{t("Loading more…")}</p>
             )}
           </>
         )}

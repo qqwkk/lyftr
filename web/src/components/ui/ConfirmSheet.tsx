@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { AlertCircle } from 'lucide-react'
 import { useEscapeKey } from '../../hooks/useEscapeKey'
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock'
+import { t } from '@lyftr/shared'
 
 interface Props {
   open: boolean
@@ -34,7 +35,7 @@ interface Props {
 // Mirrors mobile's ConfirmSheet prop-for-prop, `error` included, so a fix to how a failed
 // confirmation behaves is one change on each platform rather than eight.
 export default function ConfirmSheet({
-  open, title, message, confirmLabel, busyLabel, cancelLabel = 'Cancel',
+  open, title, message, confirmLabel, busyLabel, cancelLabel = t('Cancel'),
   destructive = false, icon: Icon, busy = false, error, onConfirm, onCancel,
 }: Props) {
   useBodyScrollLock(open)

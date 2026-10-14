@@ -4,7 +4,7 @@ import { router, useLocalSearchParams, type Href } from 'expo-router'
 import {
   ArrowLeft, ChevronRight, Clock, Edit2, Layers, Pause, TimerOff, Trash2, TrendingUp,
 } from 'lucide-react-native'
-import { useAsyncAction, apiErrorMessage, displayVolume, displayWeight, weightShort, type Workout, type Set as WorkoutSet, workoutDay, restLabel, calcVolume, countWorkingSets, exerciseVolume, formatDay } from '@lyftr/shared'
+import { useAsyncAction, apiErrorMessage, displayVolume, displayWeight, weightShort, type Workout, type Set as WorkoutSet, workoutDay, restLabel, calcVolume, countWorkingSets, exerciseVolume, formatDay, t, tPlural } from '@lyftr/shared'
 import { AppText, Button, ConfirmSheet, ErrorState, Loading, Screen, deleteConfirmProps } from '../../../src/components/ui'
 import { ExerciseImage } from '../../../src/components/workouts/ExerciseImage'
 import { client, useSettingsStore } from '../../../src/lib/lyftr'
@@ -29,7 +29,7 @@ function SetChip({ set, isBest, unit }: { set: WorkoutSet; isBest: boolean; unit
         color={isBest ? 'brand' : 'secondary'}
         style={{ fontVariant: ['tabular-nums'] }}
       >
-        {set.reps > 0 ? set.reps : '—'} × {set.weight > 0 ? `${displayWeight(set.weight, unit)} ${unit}` : 'BW'}
+        {set.reps > 0 ? set.reps : '—'} × {set.weight > 0 ? `${displayWeight(set.weight, unit)} ${unit}` : t('BW')}
       </AppText>
     </View>
   )
@@ -75,7 +75,7 @@ export default function WorkoutDetail() {
         const data = await client.workoutAPI.get(Number(id))
         if (!cancelled) setWorkout(data)
       } catch (err) {
-        if (!cancelled) setError(apiErrorMessage(err, "The server didn't say what went wrong."))
+        if (!cancelled) setError(apiErrorMessage(err, t("The server didn't say what went wrong.")))
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -95,7 +95,7 @@ export default function WorkoutDetail() {
     if (!workout) return
     await client.workoutAPI.delete(workout.id)
     goBack() // list refetches on focus
-  }, 'Failed to delete workout')
+  }, t('Failed to delete workout'))
 
   if (loading) return <Loading />
 
@@ -106,10 +106,10 @@ export default function WorkoutDetail() {
         <View className="flex-1 py-4">
           <ErrorState
             size="page"
-            title="Couldn't load this workout"
-            message={error ?? 'That workout no longer exists.'}
+            title={t("Couldn't load this workout")}
+            message={error ?? t('That workout no longer exists.')}
             onRetry={error ? () => { setError(null); setRetryKey((k) => k + 1) } : undefined}
-            secondary={<Button title="Back to workouts" variant="secondary" onPress={goBack} />}
+            secondary={<Button title={t("Back to workouts")} variant="secondary" onPress={goBack} />}
           />
         </View>
       </Screen>
@@ -129,7 +129,7 @@ export default function WorkoutDetail() {
           <View className="flex-row items-center justify-between">
             <Pressable onPress={goBack} hitSlop={8} className="flex-row items-center gap-1.5 active:opacity-60">
               <ArrowLeft size={16} color={colors.txMuted} />
-              <AppText variant="body" color="muted">Workouts</AppText>
+              <AppText variant="body" color="muted">{t("Workouts")}</AppText>
             </Pressable>
             <View className="flex-row items-center gap-2">
               {/* Clear hierarchy over two competing colored squares: Edit is the
@@ -138,17 +138,17 @@ export default function WorkoutDetail() {
                   Both are h-9 so they read as a matched pair. */}
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Edit workout"
+                accessibilityLabel={t("Edit workout")}
                 onPress={() => router.push(`/workouts/${workout.id}/edit`)}
                 hitSlop={6}
                 className="h-9 flex-row items-center gap-1.5 rounded-lg border border-brand-500/20 bg-brand-500/10 px-3 active:scale-95"
               >
                 <Edit2 size={15} color={accent} strokeWidth={2.2} />
-                <AppText variant="label" style={{ color: accent }}>Edit</AppText>
+                <AppText variant="label" style={{ color: accent }}>{t("Edit")}</AppText>
               </Pressable>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Delete workout"
+                accessibilityLabel={t("Delete workout")}
                 onPress={() => setConfirming(true)}
                 disabled={remove.busy}
                 hitSlop={6}
@@ -161,7 +161,7 @@ export default function WorkoutDetail() {
 
           {/* Delete confirm — slide-up bottom sheet (mirrors web's portal sheet). */}
           <ConfirmSheet
-            {...deleteConfirmProps({ title: 'Delete Workout?', subject: `"${workout.name}"` })}
+            {...deleteConfirmProps({ title: t('Delete Workout?'), subject: `"${workout.name}"` })}
             open={confirming}
             busy={remove.busy}
             error={remove.error}
@@ -186,24 +186,24 @@ export default function WorkoutDetail() {
               <View className="flex-1 items-center">
                 <View className="flex-row items-center gap-1 mb-0.5">
                   <Clock size={13} color={colors.txMuted} />
-                  <AppText variant="caption" color="muted">Duration</AppText>
+                  <AppText variant="caption" color="muted">{t("Duration")}</AppText>
                 </View>
                 <AppText variant="heading" style={{ fontVariant: ['tabular-nums'] }}>
                   {durationMin}
-                  <AppText variant="caption" color="muted"> min</AppText>
+                  <AppText variant="caption" color="muted"> {t("min")}</AppText>
                 </AppText>
               </View>
               <View className="flex-1 items-center border-x border-surface-border">
                 <View className="flex-row items-center gap-1 mb-0.5">
                   <Layers size={13} color={colors.txMuted} />
-                  <AppText variant="caption" color="muted">Sets</AppText>
+                  <AppText variant="caption" color="muted">{t("Sets")}</AppText>
                 </View>
                 <AppText variant="heading" style={{ fontVariant: ['tabular-nums'] }}>{totalSets}</AppText>
               </View>
               <View className="flex-1 items-center">
                 <View className="flex-row items-center gap-1 mb-0.5">
                   <TrendingUp size={13} color={colors.txMuted} />
-                  <AppText variant="caption" color="muted">Volume</AppText>
+                  <AppText variant="caption" color="muted">{t("Volume")}</AppText>
                 </View>
                 <AppText variant="heading" style={{ fontVariant: ['tabular-nums'] }}>
                   {totalVolume > 0 ? totalVolume.toLocaleString() : '—'}
@@ -223,7 +223,7 @@ export default function WorkoutDetail() {
           {!restOn && (
             <View className="flex-row items-center gap-1.5 px-1">
               <TimerOff size={13} color={colors.txMuted} />
-              <AppText variant="caption" color="muted">Rest timer is off — turn it on in Settings</AppText>
+              <AppText variant="caption" color="muted">{t("Rest timer is off — turn it on in Settings")}</AppText>
             </View>
           )}
           <View className="gap-3">
@@ -250,13 +250,13 @@ export default function WorkoutDetail() {
                       <View className="flex-row items-center gap-2 mt-0.5">
                         {ex.exercise?.muscle_group ? <MuscleBadge muscle={ex.exercise.muscle_group} /> : null}
                         <AppText variant="caption" color="muted" numberOfLines={1} className="flex-shrink">
-                          {sets.length} sets{exVol > 0 ? ` · ${exVol.toLocaleString()} ${wUnit}` : ''}
+                          {tPlural(sets.length, '{count} set|{count} sets')}{exVol > 0 ? ` · ${exVol.toLocaleString()} ${wUnit}` : ''}
                         </AppText>
                       </View>
                     </View>
                     {maxWeight > 0 && (
                       <View className="items-end mr-1">
-                        <AppText variant="label" color="muted">best</AppText>
+                        <AppText variant="label" color="muted">{t("best")}</AppText>
                         <AppText variant="subheading" color="brand" style={{ fontVariant: ['tabular-nums'] }}>
                           {maxWeight} {wUnit}
                         </AppText>
@@ -274,7 +274,7 @@ export default function WorkoutDetail() {
                       </View>
                       {restOn && (
                         ex.rest_seconds === 0 ? (
-                          <AppText variant="caption" color="muted">No rest</AppText>
+                          <AppText variant="caption" color="muted">{t("No rest")}</AppText>
                         ) : (
                           <View className="flex-row items-center gap-1">
                             <Pause size={13} color={colors.txMuted} />

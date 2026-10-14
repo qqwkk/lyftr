@@ -6,7 +6,7 @@ import { AppText, Field, IconButton, SegmentedControl } from '../ui'
 import { useTheme } from '../../theme/useTheme'
 import { DayExercisesEditor } from './DayExercisesEditor'
 import type { DayDraft } from './types'
-import { appendDay, removeDayAt, moveDayBy, patchDayAt } from '@lyftr/shared'
+import { appendDay, removeDayAt, moveDayBy, patchDayAt, t, tPlural } from '@lyftr/shared'
 
 interface Props {
   days: DayDraft[]
@@ -59,7 +59,7 @@ export function ProgramDaysEditor({
     <View className="gap-3">
       {days.length === 0 ? (
         <AppText variant="caption" color="muted" className="py-4 text-center">
-          No days yet — add a workout or rest day below.
+          {t("No days yet — add a workout or rest day below.")}
         </AppText>
       ) : null}
 
@@ -72,10 +72,10 @@ export function ProgramDaysEditor({
           >
             <View className="flex-row items-center gap-2 p-3">
               <View className="flex-shrink-0">
-                <Pressable accessibilityRole="button" accessibilityLabel={`Move day ${idx + 1} up`} onPress={() => moveDay(idx, -1)} disabled={idx === 0} hitSlop={4} className={idx === 0 ? 'opacity-20' : 'active:opacity-60'}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t('Move day {number} up', { number: idx + 1 })} onPress={() => moveDay(idx, -1)} disabled={idx === 0} hitSlop={4} className={idx === 0 ? 'opacity-20' : 'active:opacity-60'}>
                   <ChevronUp size={16} color={colors.txMuted} />
                 </Pressable>
-                <Pressable accessibilityRole="button" accessibilityLabel={`Move day ${idx + 1} down`} onPress={() => moveDay(idx, 1)} disabled={idx === days.length - 1} hitSlop={4} className={idx === days.length - 1 ? 'opacity-20' : 'active:opacity-60'}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t('Move day {number} down', { number: idx + 1 })} onPress={() => moveDay(idx, 1)} disabled={idx === days.length - 1} hitSlop={4} className={idx === days.length - 1 ? 'opacity-20' : 'active:opacity-60'}>
                   <ChevronDown size={16} color={colors.txMuted} />
                 </Pressable>
               </View>
@@ -88,17 +88,17 @@ export function ProgramDaysEditor({
                 <Field
                   value={day.name}
                   onChangeText={(t) => updateDay(idx, { name: t })}
-                  placeholder={day.is_rest_day ? `Rest Day ${idx + 1}` : `Day ${idx + 1}`}
+                  placeholder={day.is_rest_day ? t('Rest Day {number}', { number: idx + 1 }) : t('Day {number}', { number: idx + 1 })}
                 />
               </View>
 
-              <IconButton icon={Trash2} label="Remove day" variant="ghost" size="sm" onPress={() => removeDay(idx)} />
+              <IconButton icon={Trash2} label={t("Remove day")} variant="ghost" size="sm" onPress={() => removeDay(idx)} />
             </View>
 
             <View className="px-3 pb-3">
               <SegmentedControl
                 size="sm"
-                options={[{ value: 'workout', label: 'Workout' }, { value: 'rest', label: 'Rest' }] as const}
+                options={[{ value: 'workout', label: t('Workout') }, { value: 'rest', label: t('Rest') }] as const}
                 value={day.is_rest_day ? 'rest' : 'workout'}
                 onChange={(v) => setDayType(idx, v === 'rest')}
               />
@@ -111,7 +111,7 @@ export function ProgramDaysEditor({
                 className="flex-row items-center justify-between border-t border-surface-border/60 px-3 py-2.5 active:bg-surface-muted/40"
               >
                 <AppText variant="caption" color="muted">
-                  {day.exercises.length} exercise{day.exercises.length === 1 ? '' : 's'}
+                  {tPlural(day.exercises.length, '{count} exercise|{count} exercises')}
                 </AppText>
                 {isOpen ? <ChevronDown size={14} color={colors.txMuted} /> : <ChevronRight size={14} color={colors.txMuted} />}
               </Pressable>
@@ -141,7 +141,7 @@ export function ProgramDaysEditor({
           className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-brand-500/20 bg-brand-500/10 py-2.5 active:scale-95"
         >
           <Plus size={14} color={accent} />
-          <AppText variant="label" style={{ color: accent }}>Add Workout Day</AppText>
+          <AppText variant="label" style={{ color: accent }}>{t("Add Workout Day")}</AppText>
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -149,7 +149,7 @@ export function ProgramDaysEditor({
           className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-surface-border bg-surface-muted py-2.5 active:scale-95"
         >
           <Moon size={14} color={colors.txMuted} />
-          <AppText variant="label" color="secondary">Add Rest Day</AppText>
+          <AppText variant="label" color="secondary">{t("Add Rest Day")}</AppText>
         </Pressable>
       </View>
     </View>

@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { router, type Href } from 'expo-router'
-import { format } from 'date-fns'
 import { BookOpen, ChevronRight, Dumbbell, Layers, Moon, MoreVertical, Play, Sun } from 'lucide-react-native'
 import type { Program, ProgramDay } from '@lyftr/shared'
 import { useAsyncAction,
   activeSessionExercisesForDay, allExercises, dayLabel, isDayStartable, programExerciseCount, programSetCount,
-  sessionNameForDay, todaysDay,
+  sessionNameForDay, todaysDay, t,
+  tPlural, formatLocalized,
 } from '@lyftr/shared'
 import { ActionSheet, AppText, Card, ConfirmSheet, IconButton, deleteAction, deleteConfirmProps, editAction } from '../ui'
 import { useTheme } from '../../theme/useTheme'
@@ -71,7 +71,7 @@ export function ProgramCard({ program, onPress, onDeleted }: Props) {
   const remove = useAsyncAction(async () => {
     await client.programAPI.delete(program.id)
     onDeleted(program.id)
-  }, 'Failed to delete program')
+  }, t('Failed to delete program'))
 
   return (
     <Pressable accessibilityRole="button" onPress={onPress} className="active:scale-[0.99]">
@@ -80,19 +80,19 @@ export function ProgramCard({ program, onPress, onDeleted }: Props) {
         <View className="flex-1">
           <AppText variant="subheading" numberOfLines={1}>{program.name}</AppText>
           <AppText variant="caption" color="muted" numberOfLines={1} className="mt-0.5">
-            {format(new Date(program.created_at), 'MMM d, yyyy')}
+            {formatLocalized(new Date(program.created_at), 'MMM d, yyyy')}
           </AppText>
           {/* Metric chips with leading icons — shared taxonomy with WorkoutCard:
               Dumbbell = exercises, Layers = sets. */}
           <View className="mt-0.5 flex-row items-center gap-x-2 flex-wrap">
             <View className="flex-row items-center gap-1">
               <Dumbbell size={12} color={colors.txMuted} />
-              <AppText variant="caption" color="muted" numberOfLines={1}>{exCount} exercise{exCount === 1 ? '' : 's'}</AppText>
+              <AppText variant="caption" color="muted" numberOfLines={1}>{tPlural(exCount, '{count} exercise|{count} exercises')}</AppText>
             </View>
             <AppText variant="caption" color="muted">·</AppText>
             <View className="flex-row items-center gap-1">
               <Layers size={12} color={colors.txMuted} />
-              <AppText variant="caption" color="muted" numberOfLines={1}>{totalSets} set{totalSets === 1 ? '' : 's'}</AppText>
+              <AppText variant="caption" color="muted" numberOfLines={1}>{tPlural(totalSets, '{count} set|{count} sets')}</AppText>
             </View>
             {dayCount > 1 && today ? (
               <>
@@ -100,7 +100,7 @@ export function ProgramCard({ program, onPress, onDeleted }: Props) {
                 {today.is_rest_day ? (
                   <View className="flex-row items-center gap-1">
                     <Moon size={12} color={colors.txMuted} />
-                    <AppText variant="caption" color="muted" numberOfLines={1}>Rest today</AppText>
+                    <AppText variant="caption" color="muted" numberOfLines={1}>{t("Rest today")}</AppText>
                   </View>
                 ) : (
                   <View className="flex-row items-center gap-1">
@@ -109,7 +109,7 @@ export function ProgramCard({ program, onPress, onDeleted }: Props) {
                         things next to each other. Sun/Moon reads as a natural due/rest pair. */}
                     <Sun size={12} color={accent} />
                     <AppText variant="caption" numberOfLines={1} style={{ color: accent }}>
-                      Today: {dayLabel(today, today.order_index)}
+                      {t("Today:")} {dayLabel(today, today.order_index)}
                     </AppText>
                   </View>
                 )}
@@ -148,7 +148,7 @@ export function ProgramCard({ program, onPress, onDeleted }: Props) {
             <View className="flex-1">
               <AppText variant="subheading" numberOfLines={1}>{program.name}</AppText>
               <AppText variant="caption" color="muted" numberOfLines={1} className="mt-0.5">
-                {exCount} exercise{exCount === 1 ? '' : 's'} · {totalSets} set{totalSets === 1 ? '' : 's'}
+                {tPlural(exCount, '{count} exercise|{count} exercises')} · {tPlural(totalSets, '{count} set|{count} sets')}
               </AppText>
             </View>
           </View>
@@ -160,7 +160,7 @@ export function ProgramCard({ program, onPress, onDeleted }: Props) {
       />
 
       <ConfirmSheet
-        {...deleteConfirmProps({ title: 'Delete Program?', subject: `"${program.name}"` })}
+        {...deleteConfirmProps({ title: t('Delete Program?'), subject: `"${program.name}"` })}
         open={confirming}
         busy={remove.busy}
         error={remove.error}

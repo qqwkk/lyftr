@@ -1,6 +1,8 @@
 import '../src/lib/polyfills'
 import '../global.css'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { hydrateLanguage, useLanguage } from '@lyftr/shared'
+import { storage } from '../src/lib/storage'
 import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
@@ -55,6 +57,8 @@ function RootStack({ isAuthed }: { isAuthed: boolean }) {
 
 // Root layout: hydrate persisted state once; the stack below decides what is reachable.
 export default function RootLayout() {
+  useLanguage()
+  const [languageReady, setLanguageReady] = useState(false)
   const hydrateAuth = useAuthStore((s) => s.hydrate)
   const hydrateServer = useServerStore((s) => s.hydrate)
   const hydrateTheme = useThemeStore((s) => s.hydrate)
@@ -72,9 +76,10 @@ export default function RootLayout() {
     PlusJakartaSans_700Bold,
     PlusJakartaSans_800ExtraBold,
   })
-  const ready = isHydrated && themeHydrated && fontsLoaded
+  const ready = isHydrated && themeHydrated && fontsLoaded && languageReady
 
   useEffect(() => {
+    hydrateLanguage(storage).catch(() => {}).finally(() => setLanguageReady(true))
     hydrateAuth()
     hydrateServer()
     hydrateTheme()

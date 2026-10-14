@@ -1,3 +1,4 @@
+import { t } from '@lyftr/shared'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, FlatList, Modal, Pressable, TextInput, View } from 'react-native'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
@@ -98,16 +99,16 @@ export function ExercisePicker({ selectedIds, onSelect, onClose }: Props) {
       <SafeAreaView className="flex-1 bg-surface-base" edges={['top']}>
         {/* Header */}
         <View className="flex-row items-center gap-3 border-b border-surface-border px-4 pb-4 pt-3">
-          <IconButton icon={ArrowLeft} label="Close exercise picker" variant="ghost" size="md" onPress={onClose} />
+          <IconButton icon={ArrowLeft} label={t("Close exercise picker")} variant="ghost" size="md" onPress={onClose} />
           <View>
             {/* Large title (matches the sibling "Log Workout" screen title) — the
                 18px heading read undersized for a full-screen surface. */}
-            <AppText variant="title">Add Exercise</AppText>
+            <AppText variant="title">{t("Add Exercise")}</AppText>
             {/* Only true if the fetch landed — on a failure this read "0 loaded"
                 above a message saying we could not load anything. */}
             {listError ? null : (
               <AppText variant="caption" color="muted">
-                {available.length} loaded{hasMore ? '…' : ''}
+                {available.length} {t("loaded")}{hasMore ? '…' : ''}
               </AppText>
             )}
           </View>
@@ -126,7 +127,7 @@ export function ExercisePicker({ selectedIds, onSelect, onClose }: Props) {
               className="flex-1 font-sans text-base text-tx-primary"
               value={query}
               onChangeText={setQuery}
-              placeholder="Search exercises…"
+              placeholder={t("Search exercises…")}
               placeholderTextColor={colors.txMuted}
               autoCapitalize="none"
               autoCorrect={false}
@@ -139,7 +140,7 @@ export function ExercisePicker({ selectedIds, onSelect, onClose }: Props) {
         {initialLoading ? (
           <View className="flex-row items-center justify-center gap-2 py-16">
             <ActivityIndicator color={accent} />
-            <AppText variant="body" color="muted">Loading exercises…</AppText>
+            <AppText variant="body" color="muted">{t("Loading exercises…")}</AppText>
           </View>
         ) : (
           <FlatList
@@ -158,10 +159,10 @@ export function ExercisePicker({ selectedIds, onSelect, onClose }: Props) {
               // "No exercises found" is only true if we heard back. On a failed fetch
               // it reads as an empty catalogue rather than a connection that dropped.
               listError ? (
-                <ErrorState title="Couldn't load exercises" message={listError} onRetry={retryList} />
+                <ErrorState title={t("Couldn't load exercises")} message={listError} onRetry={retryList} />
               ) : (
                 <View className="items-center py-16">
-                  <AppText variant="body" color="muted">No exercises found</AppText>
+                  <AppText variant="body" color="muted">{t("No exercises found")}</AppText>
                 </View>
               )
             }
@@ -172,11 +173,11 @@ export function ExercisePicker({ selectedIds, onSelect, onClose }: Props) {
               // exercise already selected the list is empty, and the slot above would
               // render the same failure a second time.
               listError && available.length > 0 ? (
-                <ErrorState title="Couldn't load more exercises" message={listError} onRetry={retryList} />
+                <ErrorState title={t("Couldn't load more exercises")} message={listError} onRetry={retryList} />
               ) : hasMore && available.length > 0 ? (
                 <View className="flex-row items-center justify-center gap-2 py-4">
                   <ActivityIndicator color={accent} />
-                  <AppText variant="caption" color="muted">Loading more…</AppText>
+                  <AppText variant="caption" color="muted">{t("Loading more…")}</AppText>
                 </View>
               ) : null
             }

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { X, ChevronRight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { t } from '@lyftr/shared'
 
 export type ToastVariant = 'default' | 'success' | 'brand' | 'warning' | 'error'
 
@@ -71,7 +72,7 @@ export default function Toast({ title, description, icon: Icon, variant = 'defau
         <button
           type="button"
           onClick={onDismiss}
-          aria-label="Dismiss"
+          aria-label={t("Dismiss")}
           className="p-1.5 -m-1.5 text-tx-muted hover:text-tx-primary flex-shrink-0"
         >
           <X className="w-4 h-4" />

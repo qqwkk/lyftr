@@ -3,7 +3,7 @@ import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native'
 import { router, useFocusEffect, type Href } from 'expo-router'
 import { Award, CheckCircle2, Dumbbell, Plus, RotateCcw, TrendingUp } from 'lucide-react-native'
 import { format } from 'date-fns'
-import { weightShort, workoutDay, type Workout } from '@lyftr/shared'
+import { weightShort, workoutDay, type Workout, t, tPlural } from '@lyftr/shared'
 import { AppText, Card, EmptyState, ErrorState, IconButton, StatFailure, Label, PageHeader, Screen, SearchField, Toast } from '../../../src/components/ui'
 import { WorkoutCard } from '../../../src/components/workouts/WorkoutCard'
 import { WorkoutsSkeleton } from '../../../src/components/workouts/WorkoutsSkeleton'
@@ -100,8 +100,10 @@ export default function Workouts() {
         <Toast
           variant={outcome.progression.is_pr ? 'warning' : 'success'}
           icon={outcome.progression.is_pr ? Award : TrendingUp}
-          title={outcome.progression.is_pr ? `New PR in ${outcome.progression.program_name}` : `New targets in ${outcome.progression.program_name}`}
-          description={`Tap to review ${outcome.progression.count} ${outcome.progression.count === 1 ? 'update' : 'updates'}`}
+          title={outcome.progression.is_pr
+          ? t('New PR in {program}', { program: outcome.progression.program_name })
+          : t('New targets in {program}', { program: outcome.progression.program_name })}
+          description={tPlural(outcome.progression.count, 'Tap to review {count} update|Tap to review {count} updates')}
           onPress={() => {
             const programId = outcome.progression!.program_id
             clearOutcome()
@@ -113,8 +115,8 @@ export default function Workouts() {
         <Toast
           variant="success"
           icon={CheckCircle2}
-          title="Workout saved"
-          description="Tap to view"
+          title={t("Workout saved")}
+          description={t("Tap to view")}
           onPress={() => {
             clearOutcome()
             router.push(`/workouts/${outcome.workoutId}`)
@@ -126,8 +128,8 @@ export default function Workouts() {
       <Toast
         variant="default"
         icon={RotateCcw}
-        title="Workout discarded"
-        description="Tap to undo"
+        title={t("Workout discarded")}
+        description={t("Tap to undo")}
         onPress={() => {
           restoreSession(outcome.session)
           clearOutcome()
@@ -148,8 +150,8 @@ export default function Workouts() {
     return (
       <Screen>
         <View className="flex-1 gap-5 py-4">
-          <PageHeader title="Workouts" subtitle="Track and review your training sessions" />
-          <ErrorState size="page" title="Couldn't load your workouts" message={listError} onRetry={retryList} retrying={loading} />
+          <PageHeader title={t("Workouts")} subtitle={t("Track and review your training sessions")} />
+          <ErrorState size="page" title={t("Couldn't load your workouts")} message={listError} onRetry={retryList} retrying={loading} />
         </View>
         {outcomeToast}
       </Screen>
@@ -170,23 +172,23 @@ export default function Workouts() {
     // These summarize the *loaded* items; while pages remain, the total is a lower bound.
     // A failed page counts as "pages remain": the hook drops hasMore on error, and
     // without listError here a dropped connection made the count look more certain.
-    { label: 'Total', value: mayHaveMore ? `${workouts.length}+` : String(workouts.length), unit: 'logged' },
+    { label: t('Total'), value: mayHaveMore ? `${workouts.length}+` : String(workouts.length), unit: t('logged') },
     {
-      label: 'This Month',
+      label: t('This Month'),
       // The month the workout was logged in, not the month its UTC instant lands in —
       // a session near a month boundary belongs to the month the lifter trained in.
       // Newest-first paging means we have seen the whole month only once a loaded row
       // predates it; until then the count is a lower bound and says so, like Total.
       value: monthCountKnown ? String(thisMonth) : `${thisMonth}+`,
-      unit: 'sessions',
+      unit: t('sessions'),
     },
     {
-      label: 'Avg Time',
+      label: t('Avg Time'),
       value:
         workouts.length > 0
           ? String(Math.round(workouts.reduce((sum, w) => sum + w.duration, 0) / workouts.length / 60))
           : '—',
-      unit: 'min',
+      unit: t('min'),
     },
   ]
 
@@ -210,12 +212,12 @@ export default function Workouts() {
         ListHeaderComponent={
           <View className="gap-5 py-4">
             <PageHeader
-              title="Workouts"
-              subtitle="Track and review your training sessions"
+              title={t("Workouts")}
+              subtitle={t("Track and review your training sessions")}
               action={
                 <IconButton
                   icon={Plus}
-                  label="Log Workout"
+                  label={t("Log Workout")}
                   variant="solid"
                   size="md"
                   onPress={() => router.push('/workouts/new')}
@@ -233,7 +235,7 @@ export default function Workouts() {
                 <Card key={s.label} className="flex-1 rounded-2xl" style={{ paddingHorizontal: 12 }}>
                   <Label className="mb-2" numberOfLines={1}>{s.label}</Label>
                   {countsUnknown ? (
-                    <StatFailure label={`Couldn't load ${s.label.toLowerCase()}`} />
+                    <StatFailure label={t("Couldn't load {label}", { label: s.label.toLowerCase() })} />
                   ) : (
                   <View className="flex-row items-end gap-1">
                     <AppText variant="heading" style={{ fontVariant: ['tabular-nums'] }}>
@@ -255,7 +257,7 @@ export default function Workouts() {
               value={search}
               onChangeText={setSearch}
               loading={refreshing}
-              placeholder="Search workouts…"
+              placeholder={t("Search workouts…")}
             />
           </View>
         }
@@ -275,18 +277,18 @@ export default function Workouts() {
           loading ? null : listError ? (
             // Reached only with a search on screen (the early return covers the rest):
             // "No workouts found" would blame the query for a request that never landed.
-            <ErrorState title="Couldn't load your workouts" message={listError} onRetry={retryList} retrying={loading} />
+            <ErrorState title={t("Couldn't load your workouts")} message={listError} onRetry={retryList} retrying={loading} />
           ) : (
             <EmptyState
               icon={Dumbbell}
-              title="No workouts found"
-              subtitle={search ? 'Try a different search' : 'Log a workout to get started'}
+              title={t("No workouts found")}
+              subtitle={search ? t('Try a different search') : t('Log a workout to get started')}
             />
           )
         }
         ListFooterComponent={
           listError && workouts.length > 0 ? (
-            <ErrorState title="Couldn't load your workouts" message={listError} onRetry={retryList} retrying={loading} />
+            <ErrorState title={t("Couldn't load your workouts")} message={listError} onRetry={retryList} retrying={loading} />
           ) : hasMore && loading && workouts.length > 0 ? (
             <View className="items-center py-3">
               <ActivityIndicator size="small" color={accent} />

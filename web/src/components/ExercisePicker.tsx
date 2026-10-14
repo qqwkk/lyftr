@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowLeft, Search, Dumbbell } from 'lucide-react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useServerList, types } from '@lyftr/shared'
+import { useServerList, types, t } from '@lyftr/shared'
 import { ListError } from './ui'
 import { exerciseAPI } from '../services/api'
 import { muscleColorBordered, EQUIPMENT_LABEL } from '../utils/exerciseUtils'
@@ -82,7 +82,7 @@ export default function ExercisePicker({ selectedIds, onSelect, onClose }: Props
           <ArrowLeft className="w-5 h-5 text-tx-muted" />
         </button>
         <div>
-          <h2 className="font-display font-bold text-xl text-tx-primary">Add Exercise</h2>
+          <h2 className="font-display font-bold text-xl text-tx-primary">{t("Add Exercise")}</h2>
           {/* Derived from the rows we actually hold, so it is only true if the fetch
               landed. On a failure `available` is empty and this read "0 loaded" directly
               above a message saying we could not load anything — the same claim the
@@ -103,7 +103,7 @@ export default function ExercisePicker({ selectedIds, onSelect, onClose }: Props
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search exercises…"
+            placeholder={t("Search exercises…")}
             className="input pl-10 w-full"
             autoFocus
           />
@@ -115,18 +115,18 @@ export default function ExercisePicker({ selectedIds, onSelect, onClose }: Props
         {initialLoading ? (
           <div className="flex items-center justify-center py-16 text-tx-muted text-sm">
             <Dumbbell className="w-5 h-5 mr-2 animate-pulse text-brand-500" />
-            Loading exercises…
+            {t('Loading exercises…')}
           </div>
         ) : available.length === 0 ? (
           // "No exercises found" is only true if we heard back. On a failed fetch it
           // reads as an empty catalogue rather than a connection that dropped.
           error ? (
             <div className="p-4">
-              <ListError subject="these exercises" message={error} onRetry={retry} />
+              <ListError subject={t("these exercises")} message={error} onRetry={retry} />
             </div>
           ) : (
             <div className="flex items-center justify-center py-16 text-tx-muted text-sm">
-              No exercises found
+              {t('No exercises found')}
             </div>
           )
         ) : (

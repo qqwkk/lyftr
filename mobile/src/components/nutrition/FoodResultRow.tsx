@@ -1,3 +1,4 @@
+import { t } from '@lyftr/shared'
 import { Image, Pressable, View } from 'react-native'
 import { ChevronRight, Star, Utensils } from 'lucide-react-native'
 import type { FoodSearchResult } from '@lyftr/shared'
@@ -48,13 +49,13 @@ export function FoodResultRow({
         <AppText variant="bodySemibold" numberOfLines={1}>{item.name}</AppText>
         {item.brand ? <AppText variant="caption" color="muted" numberOfLines={1} className="mt-0.5">{item.brand}</AppText> : null}
         <View className="mt-1 flex-row flex-wrap items-center gap-x-1.5">
-          <AppText variant="caption" color="secondary" style={{ fontWeight: '600', fontVariant: ['tabular-nums'] }}>{Math.round(item.calories)} kcal</AppText>
+          <AppText variant="caption" color="secondary" style={{ fontWeight: '600', fontVariant: ['tabular-nums'] }}>{Math.round(item.calories)} {t("kcal")}</AppText>
           <Dot />
-          <AppText variant="caption" style={{ color: MACRO_TEXT.protein, fontVariant: ['tabular-nums'] }}>{item.protein.toFixed(0)}g P</AppText>
+          <AppText variant="caption" style={{ color: MACRO_TEXT.protein, fontVariant: ['tabular-nums'] }}>{item.protein.toFixed(0)}{t("g P")}</AppText>
           <Dot />
-          <AppText variant="caption" style={{ color: MACRO_TEXT.carbs, fontVariant: ['tabular-nums'] }}>{item.carbs.toFixed(0)}g C</AppText>
+          <AppText variant="caption" style={{ color: MACRO_TEXT.carbs, fontVariant: ['tabular-nums'] }}>{item.carbs.toFixed(0)}{t("g C")}</AppText>
           <Dot />
-          <AppText variant="caption" style={{ color: MACRO_TEXT.fat, fontVariant: ['tabular-nums'] }}>{item.fat.toFixed(0)}g F</AppText>
+          <AppText variant="caption" style={{ color: MACRO_TEXT.fat, fontVariant: ['tabular-nums'] }}>{item.fat.toFixed(0)}{t("g F")}</AppText>
           {item.serving_size ? (<><Dot /><AppText variant="caption" color="muted" style={{ fontSize: 10 }}>{item.serving_size}</AppText></>) : null}
         </View>
       </View>
@@ -88,7 +89,7 @@ export function FavoriteStar(
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected: favorited }}
-      accessibilityLabel={favorited ? `Remove ${name} from Favorites` : `Add ${name} to Favorites`}
+      accessibilityLabel={favorited ? t('Remove {name} from Favorites', { name }) : t('Add {name} to Favorites', { name })}
       onPress={onPress}
       disabled={busy}
       hitSlop={size === 'header' ? 6 : 8}

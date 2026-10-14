@@ -15,7 +15,7 @@ import Loading from '../components/Loading'
 import PeriodSelector from '../components/PeriodSelector'
 import { foodAPI, savedFoodsAPI } from '../services/api'
 import { useSettingsStore } from '../stores/settings'
-import { apiErrorMessage, entryToResult, isDailyStats, todayStr, dayToLocalDate, MACRO_COLORS, types, formatDay, useFavorites, type Favorites } from '@lyftr/shared'
+import { apiErrorMessage, entryToResult, isDailyStats, todayStr, dayToLocalDate, MACRO_COLORS, types, formatDay, useFavorites, type Favorites, formatLocalized, t } from '@lyftr/shared'
 import { ErrorState } from '../components/ui'
 import FavoriteStar from '../components/FavoriteStar'
 
@@ -141,7 +141,7 @@ export default function Food() {
           .then(st => isDailyStats(st) ? st : Promise.reject(new Error('unreadable')))
           .catch(err => {
             statsFailed = true
-            statsMessage = apiErrorMessage(err, "The server didn't say what went wrong.")
+            statsMessage = apiErrorMessage(err, t("The server didn't say what went wrong."))
             return defaultStats
           }),
       ])
@@ -154,7 +154,7 @@ export default function Food() {
         return next
       })
     } catch (err: any) {
-      setLoadError(apiErrorMessage(err, "The server didn't say what went wrong."))
+      setLoadError(apiErrorMessage(err, t("The server didn't say what went wrong.")))
     } finally {
       hasLoadedRef.current = true
       setLoading(false)
@@ -184,7 +184,7 @@ export default function Food() {
       .catch(err => {
         if (cancelled) return
         setMissing(m => ({
-          ...m, 'your history': apiErrorMessage(err, "The server didn't say what went wrong."),
+          ...m, 'your history': apiErrorMessage(err, t("The server didn't say what went wrong.")),
         }))
       })
       .finally(() => { if (!cancelled) setHistoryLoading(false) })
@@ -203,7 +203,7 @@ export default function Food() {
       setDeleteConfirmId(null)
       foodAPI.stats(selectedDate).then(setStats).catch(() => {})
     } catch (err) {
-      setError(apiErrorMessage(err, "Couldn't delete that entry."))
+      setError(apiErrorMessage(err, t("Couldn't delete that entry.")))
     } finally {
       setDeletingId(null)
     }
@@ -216,10 +216,10 @@ export default function Food() {
   if (loadError) {
     return (
       <div className="space-y-4 animate-slide-up">
-        <PageHeader title="Nutrition" subtitle="Macros & meals" />
+        <PageHeader title={t("Nutrition")} subtitle={t("Macros & meals")} />
         <ErrorState
           size="page"
-          title="Couldn't load your food log"
+          title={t("Couldn't load your food log")}
           message={loadError}
           onRetry={() => loadDay(selectedDate)}
         />
@@ -243,19 +243,19 @@ export default function Food() {
   const canGoNext = selectedDate < todayStr()
 
   const dayLabel = isToday
-    ? 'Today'
+    ? t('Today')
     : selectedDate === format(subDays(new Date(), 1), 'yyyy-MM-dd')
-      ? 'Yesterday'
-      : format(selectedDateObj, 'EEE, MMM d')
+      ? t('Yesterday')
+      : formatLocalized(selectedDateObj, 'EEE, MMM d')
 
   return (
     <div className="space-y-4 animate-slide-up">
       <PageHeader
-        title="Nutrition"
-        subtitle="Macros & meals"
+        title={t("Nutrition")}
+        subtitle={t("Macros & meals")}
         action={
           <button onClick={() => openLog('breakfast')} className="btn-primary btn-sm">
-            <Plus className="w-4 h-4" /> Log Food
+            <Plus className="w-4 h-4" /> {t('Log Food')}
           </button>
         }
       />
@@ -270,7 +270,7 @@ export default function Food() {
       {/* Date navigator */}
       <div className="flex items-center gap-2">
         <button
-          aria-label="Previous day"
+          aria-label={t("Previous day")}
           onClick={() => setSelectedDate(prevDate)}
           className="p-3 rounded-xl hover:bg-surface-muted active:scale-95 transition-all text-tx-muted"
         >
@@ -294,7 +294,7 @@ export default function Food() {
           />
         </div>
         <button
-          aria-label="Next day"
+          aria-label={t("Next day")}
           onClick={() => setSelectedDate(nextDate)}
           disabled={!canGoNext}
           className="p-3 rounded-xl hover:bg-surface-muted active:scale-95 transition-all text-tx-muted disabled:opacity-30 disabled:cursor-not-allowed"
@@ -310,8 +310,8 @@ export default function Food() {
         <div className="card p-5">
           <ErrorState
             size="section"
-            title="Couldn't load today's totals"
-            message="Something went wrong on our end."
+            title={t("Couldn't load today's totals")}
+            message={t("Something went wrong on our end.")}
             onRetry={() => void loadDay(selectedDate)}
           />
         </div>
@@ -321,7 +321,7 @@ export default function Food() {
           {/* Calorie hero */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-tx-muted uppercase tracking-wide mb-1">Calories</p>
+              <p className="text-xs font-medium text-tx-muted uppercase tracking-wide mb-1">{t("Calories")}</p>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-4xl font-bold tabular-nums text-tx-primary">{Math.round(totalCals)}</span>
                 <span className="text-sm text-tx-muted">/ {calTarget}</span>
@@ -365,19 +365,19 @@ export default function Food() {
               value={s?.total_protein ?? 0}
               target={settings.protein_target}
               color={MACRO_COLORS.protein}
-              label="Protein"
+              label={t("Protein")}
             />
             <MacroRing
               value={s?.total_carbs ?? 0}
               target={settings.carb_target}
               color={MACRO_COLORS.carbs}
-              label="Carbs"
+              label={t("Carbs")}
             />
             <MacroRing
               value={s?.total_fat ?? 0}
               target={settings.fat_target}
               color={MACRO_COLORS.fat}
-              label="Fat"
+              label={t("Fat")}
             />
           </div>
         </div>
@@ -399,7 +399,7 @@ export default function Food() {
                     <MealIcon className={`w-4 h-4 ${iconColor}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-sm font-semibold text-tx-primary">{MEAL_LABELS[meal]}</span>
+                    <span className="text-sm font-semibold text-tx-primary">{t(MEAL_LABELS[meal])}</span>
                     {mealCals > 0 && (
                       <span className="ml-2 text-xs text-tx-muted tabular-nums">{Math.round(mealCals)} kcal</span>
                     )}
@@ -407,7 +407,7 @@ export default function Food() {
                   <IconButton
                     icon={Plus}
                     variant="solid"
-                    label={`Add to ${MEAL_LABELS[meal]}`}
+                    label={t('Add to {meal}', { meal: t(MEAL_LABELS[meal]) })}
                     onClick={() => openLog(meal)}
                   />
                 </div>
@@ -428,14 +428,14 @@ export default function Food() {
                         {deleteConfirmId === entry.id ? (
                           <div className="px-4 py-3 flex items-center justify-between gap-3 bg-error-500/5 border-l-2 border-error-500">
                             <p className="text-xs text-tx-secondary flex-1 min-w-0">
-                              Delete <span className="font-medium text-tx-primary">{entry.name}</span>?
+                              {t('Delete')} <span className="font-medium text-tx-primary">{entry.name}</span>?
                             </p>
                             <div className="flex gap-2 flex-shrink-0">
                               <button onClick={() => setDeleteConfirmId(null)} className="btn-secondary btn-sm">
-                                Cancel
+                                {t('Cancel')}
                               </button>
                               <button onClick={() => handleDelete(entry.id)} disabled={deletingId === entry.id} className="btn-danger-solid btn-sm disabled:opacity-50">
-                                {deletingId === entry.id ? '…' : 'Delete'}
+                                {deletingId === entry.id ? '…' : t('Delete')}
                               </button>
                             </div>
                           </div>
@@ -472,7 +472,7 @@ export default function Food() {
                               <ChevronRight className="w-4 h-4 text-tx-muted flex-shrink-0" />
                             </button>
                             {favoritesLoaded && <EntryStar entry={entry} favorites={favorites} />}
-                            <IconButton icon={Trash2} variant="danger" label="Delete" onClick={() => setDeleteConfirmId(entry.id)} />
+                            <IconButton icon={Trash2} variant="danger" label={t("Delete")} onClick={() => setDeleteConfirmId(entry.id)} />
                           </div>
                         )}
                       </div>
@@ -487,13 +487,13 @@ export default function Food() {
       {/* Macro history */}
       <div className="card p-5">
         <SectionHeader
-          title="Macro History"
+          title={t("Macro History")}
           right={<PeriodSelector options={HISTORY_PERIODS} value={historyPeriod} onChange={setHistoryPeriod} />}
           className="mb-5"
         />
 
         {historyLoading ? (
-          <div className="flex items-center justify-center h-48 text-xs text-tx-muted">Loading…</div>
+          <div className="flex items-center justify-center h-48 text-xs text-tx-muted">{t("Loading…")}</div>
         ) : historyData.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 gap-2">
             {historyMissing ? (
@@ -502,14 +502,14 @@ export default function Food() {
               // unrelated icons for one condition.
               <ErrorState
                 size="section"
-                title="Couldn't load your history"
+                title={t("Couldn't load your history")}
                 message={missing['your history']}
                 onRetry={() => setHistoryKey(k => k + 1)}
               />
             ) : (
               <>
                 <CalendarDays className="w-8 h-8 text-tx-muted opacity-40" />
-                <p className="text-xs text-tx-muted">No data yet — start logging meals</p>
+                <p className="text-xs text-tx-muted">{t("No data yet — start logging meals")}</p>
               </>
             )}
           </div>
@@ -557,18 +557,18 @@ export default function Food() {
                 formatter={(val: number, name: string) => [`${Math.round(val)}g`, name]}
                 cursor={{ stroke: 'rgba(99,102,241,0.15)', strokeWidth: 1 }}
               />
-              <Area type="monotone" dataKey="fat" stackId="macros" stroke={MACRO_COLORS.fat} strokeWidth={1.5} fill="url(#gFat)" name="Fat" dot={false} />
-              <Area type="monotone" dataKey="carbs" stackId="macros" stroke={MACRO_COLORS.carbs} strokeWidth={1.5} fill="url(#gCarbs)" name="Carbs" dot={false} />
-              <Area type="monotone" dataKey="protein" stackId="macros" stroke={MACRO_COLORS.protein} strokeWidth={1.5} fill="url(#gProtein)" name="Protein" dot={false} />
+              <Area type="monotone" dataKey="fat" stackId="macros" stroke={MACRO_COLORS.fat} strokeWidth={1.5} fill="url(#gFat)" name={t("Fat")} dot={false} />
+              <Area type="monotone" dataKey="carbs" stackId="macros" stroke={MACRO_COLORS.carbs} strokeWidth={1.5} fill="url(#gCarbs)" name={t("Carbs")} dot={false} />
+              <Area type="monotone" dataKey="protein" stackId="macros" stroke={MACRO_COLORS.protein} strokeWidth={1.5} fill="url(#gProtein)" name={t("Protein")} dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         )}
 
         <div className="flex gap-4 justify-center mt-4">
           {[
-            { color: MACRO_COLORS.protein, label: 'Protein' },
-            { color: MACRO_COLORS.carbs, label: 'Carbs' },
-            { color: MACRO_COLORS.fat, label: 'Fat' },
+            { color: MACRO_COLORS.protein, label: t('Protein') },
+            { color: MACRO_COLORS.carbs, label: t('Carbs') },
+            { color: MACRO_COLORS.fat, label: t('Fat') },
           ].map(m => (
             <div key={m.label} className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: m.color }} />

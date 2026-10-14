@@ -3,7 +3,7 @@ import { Pressable, Text, TextInput, View } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { Clock, Minus, Pencil, Plus, TimerOff } from 'lucide-react-native'
 import type { LucideIcon } from 'lucide-react-native'
-import { sanitizeNumericInput } from '@lyftr/shared'
+import { sanitizeNumericInput, t } from '@lyftr/shared'
 import { useTheme } from '../../theme/useTheme'
 
 interface Props {
@@ -67,7 +67,7 @@ export function RestPicker({ value, onChange }: Props) {
               className={seg(active)}
             >
               <Icon size={13} color={active ? '#ffffff' : colors.txSecondary} strokeWidth={2.2} />
-              <Text className={segText(active)}>{label}</Text>
+              <Text className={segText(active)}>{t(label)}</Text>
             </Pressable>
           )
         })}
@@ -81,7 +81,7 @@ export function RestPicker({ value, onChange }: Props) {
           className={seg(customActive, true)}
         >
           <Pencil size={13} color={customActive ? '#ffffff' : colors.txSecondary} strokeWidth={2.2} />
-          <Text className={segText(customActive)}>{isCustom ? `${value}s` : 'Custom'}</Text>
+          <Text className={segText(customActive)}>{isCustom ? `${value}s` : t('Custom')}</Text>
         </Pressable>
       </View>
 
@@ -89,7 +89,7 @@ export function RestPicker({ value, onChange }: Props) {
         <View className="mt-3 flex-row items-center justify-center gap-2">
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Minus 5 seconds"
+            accessibilityLabel={t("Minus 5 seconds")}
             onPress={() => step(-5)}
             className="rounded-xl border border-surface-border bg-surface-muted p-2.5 active:scale-95"
           >
@@ -102,16 +102,16 @@ export function RestPicker({ value, onChange }: Props) {
               keyboardType="number-pad"
               returnKeyType="done"
               selectTextOnFocus
-              accessibilityLabel="Rest seconds"
+              accessibilityLabel={t("Rest seconds")}
               placeholderTextColor={colors.txMuted}
               className="flex-1 py-0 text-center font-sans-semibold text-base text-tx-primary"
               style={{ fontVariant: ['tabular-nums'] }}
             />
-            <Text className="font-sans text-xs text-tx-muted">sec</Text>
+            <Text className="font-sans text-xs text-tx-muted">{t("sec")}</Text>
           </View>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Plus 5 seconds"
+            accessibilityLabel={t("Plus 5 seconds")}
             onPress={() => step(5)}
             className="rounded-xl border border-surface-border bg-surface-muted p-2.5 active:scale-95"
           >

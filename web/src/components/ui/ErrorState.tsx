@@ -1,6 +1,7 @@
 import type React from 'react'
 import { RotateCw } from 'lucide-react'
 import BarbellBrokenSVG from '../BarbellBrokenSVG'
+import { t } from '@lyftr/shared'
 
 // A load that failed, said as a state rather than as a banner over the wreckage.
 //
@@ -37,7 +38,7 @@ export default function ErrorState({
   message,
   size = 'section',
   onRetry,
-  retryLabel = 'Try again',
+  retryLabel = t('Try again'),
   secondary,
 }: Props) {
   const page = size === 'page'

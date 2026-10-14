@@ -18,8 +18,7 @@ import {
   testServerConnection,
   normalizeServerUrl,
   isInsecureServerUrl,
-  INSECURE_SERVER_WARNING,
-} from '@lyftr/shared'
+  INSECURE_SERVER_WARNING, t } from '@lyftr/shared'
 
 const FONT = {
   label: 'PlusJakartaSans_800ExtraBold',
@@ -212,7 +211,7 @@ export function AuthDivider() {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginVertical: 22 }}>
       <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
-      <Text style={{ fontFamily: FONT.label, fontSize: 11, letterSpacing: 1.8, color: colors.txMuted }}>OR</Text>
+      <Text style={{ fontFamily: FONT.label, fontSize: 11, letterSpacing: 1.8, color: colors.txMuted }}>{t("OR")}</Text>
       <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
     </View>
   )
@@ -236,7 +235,7 @@ export function ServerRow() {
     const base = normalizeServerUrl(url)
     if (url.trim() && !base) {
       setOk(false)
-      setMsg('Include http:// or https://')
+      setMsg(t('Include http:// or https://'))
       setTesting(false)
       return
     }
@@ -271,7 +270,7 @@ export function ServerRow() {
         }}
       >
         <Server size={16} color={brand.violet} strokeWidth={2} />
-        <Text style={{ flex: 1, fontFamily: FONT.body, fontSize: 13, color: colors.txPrimary }}>Server settings</Text>
+        <Text style={{ flex: 1, fontFamily: FONT.body, fontSize: 13, color: colors.txPrimary }}>{t("Server settings")}</Text>
         {/* Stays visible while the row is collapsed — the risk outlives the moment of entry. */}
         {insecure ? <AlertTriangle size={13} color={brand.warning} strokeWidth={2.4} /> : null}
         <Text style={{ fontFamily: FONT.body, fontSize: 12, color: insecure ? brand.warning : colors.txSecondary }}>
@@ -284,7 +283,7 @@ export function ServerRow() {
           <TextInput
             value={url}
             onChangeText={(t) => { setMsg(null); setUrl(t) }}
-            placeholder="https://your-server.example.com"
+            placeholder={t("https://your-server.example.com")}
             placeholderTextColor={colors.txMuted}
             autoCapitalize="none"
             autoCorrect={false}
@@ -327,7 +326,7 @@ export function ServerRow() {
             {testing ? (
               <ActivityIndicator color={accent} />
             ) : (
-              <Text style={{ fontFamily: FONT.btn, fontSize: 14, color: colors.txSecondary }}>Test & save</Text>
+              <Text style={{ fontFamily: FONT.btn, fontSize: 14, color: colors.txSecondary }}>{t("Test & save")}</Text>
             )}
           </Pressable>
         </View>

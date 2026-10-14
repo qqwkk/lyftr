@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
 import { router } from 'expo-router'
 import { ArrowLeft, ShieldCheck } from 'lucide-react-native'
-import { useAsyncAction, differentRuleLabel, lengthRuleLabel, matchRuleLabel, newPasswordRules } from '@lyftr/shared'
+import { useAsyncAction, differentRuleLabel, lengthRuleLabel, matchRuleLabel, newPasswordRules, t } from '@lyftr/shared'
 import {
   Alert,
   AppText,
@@ -42,7 +42,7 @@ export default function ChangePasswordScreen() {
     await client.userAPI.changePassword({ current_password: current, new_password: next })
     setCurrent(''); setNext(''); setConfirm('')
     setDone(true)
-  }, "Couldn't change your password. Please try again.")
+  }, t("Couldn't change your password. Please try again."))
 
   const submit = async () => {
     // The rules render under the fields as the user types and the button stays disabled
@@ -60,7 +60,7 @@ export default function ChangePasswordScreen() {
       className="flex-row items-center gap-1.5 self-start active:opacity-60"
     >
       <ArrowLeft size={16} color={colors.txMuted} />
-      <AppText variant="body" color="muted">Settings</AppText>
+      <AppText variant="body" color="muted">{t("Settings")}</AppText>
     </Pressable>
   )
 
@@ -79,13 +79,12 @@ export default function ChangePasswordScreen() {
                 <ShieldCheck size={24} color={brand.successSoft} strokeWidth={2.2} />
               </View>
               <View className="gap-1">
-                <AppText variant="title" className="text-center">Password changed</AppText>
+                <AppText variant="title" className="text-center">{t("Password changed")}</AppText>
                 <AppText variant="body" color="muted" className="text-center">
-                  You are still signed in here. Every other device has been signed out and
-                  will need the new password.
+                  {t("You are still signed in here. Every other device has been signed out and will need the new password.")}
                 </AppText>
               </View>
-              <Button title="Back to settings" variant="secondary" onPress={back} className="mt-1" />
+              <Button title={t("Back to settings")} variant="secondary" onPress={back} className="mt-1" />
             </Card>
           </View>
         </ScrollView>
@@ -99,13 +98,13 @@ export default function ChangePasswordScreen() {
         <View className="gap-5 py-4">
           {backLink}
           <PageHeader
-            title="Change password"
-            subtitle="You will stay signed in here. Every other device is signed out."
+            title={t("Change password")}
+            subtitle={t("You will stay signed in here. Every other device is signed out.")}
           />
 
           <Card className="gap-4">
             <PasswordField
-              label="Current password"
+              label={t("Current password")}
               value={current}
               onChangeText={setCurrent}
               textContentType="password"
@@ -113,7 +112,7 @@ export default function ChangePasswordScreen() {
             {/* newPassword lets the OS keychain offer to generate and save one, and stops
                 it filing the new value under the old password's entry. */}
             <PasswordField
-              label="New password"
+              label={t("New password")}
               value={next}
               onChangeText={setNext}
               textContentType="newPassword"
@@ -122,7 +121,7 @@ export default function ChangePasswordScreen() {
               <PasswordRule state={rules.different}>{differentRuleLabel()}</PasswordRule>
             </PasswordField>
             <PasswordField
-              label="Confirm new password"
+              label={t("Confirm new password")}
               value={confirm}
               onChangeText={setConfirm}
               textContentType="newPassword"
@@ -137,14 +136,14 @@ export default function ChangePasswordScreen() {
 
             <View className="flex-row gap-2">
               <Button
-                title="Update password"
+                title={t("Update password")}
                 onPress={submit}
                 loading={save.busy}
                 disabled={!rules.ready}
                 className="flex-1"
               />
               <Button
-                title="Cancel"
+                title={t("Cancel")}
                 variant="secondary"
                 onPress={back}
                 disabled={save.busy}

@@ -5,6 +5,7 @@ import { useTheme } from '../../theme/useTheme'
 import { AppText } from './Typography'
 import { Button } from './Button'
 import { BarbellBroken } from './BarbellBroken'
+import { t } from '@lyftr/shared'
 
 // A load that failed, said as a state rather than as an alert over the wreckage.
 // Mirrors web ui/ErrorState beat for beat — same mark, same anatomy, same sizes — so the
@@ -37,7 +38,7 @@ export function ErrorState({
   message,
   size = 'section',
   onRetry,
-  retryLabel = 'Try again',
+  retryLabel = t('Try again'),
   retrying = false,
   secondary,
 }: Props) {
@@ -70,7 +71,7 @@ export function ErrorState({
       {onRetry || secondary ? (
         <View className="mt-1 flex-row flex-wrap items-center justify-center gap-2">
           {onRetry ? (
-            <Button title={retrying ? 'Retrying…' : retryLabel} onPress={onRetry} loading={retrying} disabled={retrying} />
+            <Button title={retrying ? t('Retrying…') : retryLabel} onPress={onRetry} loading={retrying} disabled={retrying} />
           ) : null}
           {secondary}
         </View>

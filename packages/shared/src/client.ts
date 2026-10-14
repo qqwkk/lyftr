@@ -4,6 +4,7 @@ import { StorageAdapter, STORAGE_KEYS } from './storage'
 import { normalizeServerUrl } from './utils/serverUrl'
 import { networkFailureMessage, type MessageDetail } from './utils/networkError'
 import { withLoggedOn, utcOffsetMinutes } from './utils/dateUtils'
+import { t } from './i18n'
 
 // Every API call lives under this versioned path. `origin` is an absolute server
 // origin for a cross-origin backend, or '' for the same-origin reverse proxy (web).
@@ -40,10 +41,10 @@ export const isNotFound = (err: any): boolean => err?.response?.status === 404
 export const apiErrorMessage = (err: any, fallback: string, detail: MessageDetail = 'brief'): string => {
   if (err?.response) {
     const serverError = err.response.data?.error
-    if (serverError) return serverError
+    if (serverError) return t(serverError)
     const status = err.response.status
     if (status === 404 || status === 405) {
-      return "Server URL looks misconfigured — the API endpoint wasn't found. Check Server settings."
+      return t("Server URL looks misconfigured — the API endpoint wasn't found. Check Server settings.")
     }
     // Ordered ABOVE the HTML sniff on purpose. Every reverse proxy — nginx, Caddy,
     // Traefik — serves its 502 as an HTML page, so sniffing for a document first
@@ -51,7 +52,7 @@ export const apiErrorMessage = (err: any, fallback: string, detail: MessageDetai
     // most self-hosted moment there is, when the settings are fine and the stack is
     // mid-upgrade. Status is the stronger signal when we have one.
     if (status === 502 || status === 503 || status === 504) {
-      return 'The server is restarting or unreachable. Try again in a moment.'
+      return t('The server is restarting or unreachable. Try again in a moment.')
     }
     // A reverse proxy answers with its own HTML page when the app behind it is down,
     // restarting, or was never there — the body is a document, not our {"error"} envelope.
@@ -61,10 +62,10 @@ export const apiErrorMessage = (err: any, fallback: string, detail: MessageDetai
     // what reads as an app bug.
     const body = err.response.data
     if (typeof body === 'string' && /^\s*<(!doctype|html)/i.test(body)) {
-      return 'That address returned a web page, not the Lyftr API. Check Server settings.'
+      return t('That address returned a web page, not the Lyftr API. Check Server settings.')
     }
-    if (status >= 500) return 'Server error. Please try again shortly.'
-    return fallback
+    if (status >= 500) return t('Server error. Please try again shortly.')
+    return t(fallback)
   }
   return networkFailureMessage(err, detail)
 }
@@ -78,11 +79,11 @@ export const testServerConnection = async (
     const res = await axios.get<{ data: ServerInfo }>(`${apiUrl(base)}/info`, { timeout: 8000 })
     const info = res.data?.data
     if (!info?.name) {
-      return { ok: false, message: "That responded, but it doesn't look like a Lyftr server." }
+      return { ok: false, message: t("That responded, but it doesn't look like a Lyftr server.") }
     }
     return { ok: true, info }
   } catch (err) {
-    return { ok: false, message: apiErrorMessage(err, "Couldn't reach the server.", 'full') }
+    return { ok: false, message: apiErrorMessage(err, t("Couldn't reach the server."), 'full') }
   }
 }
 

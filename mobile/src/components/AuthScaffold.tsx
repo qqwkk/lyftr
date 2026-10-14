@@ -1,3 +1,4 @@
+import { t } from '@lyftr/shared'
 import { ReactNode, useRef, useState } from 'react'
 import { View, Text, Platform, Animated } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -122,7 +123,7 @@ export function AuthScaffold({
                 </View>
                 <View>
                   <Text style={{ fontFamily: 'Outfit_800ExtraBold', fontSize: 30, letterSpacing: -0.6, color: '#fff' }}>
-                    lyftr
+                    {t("lyftr")}
                   </Text>
                   <Text
                     style={{
@@ -133,7 +134,7 @@ export function AuthScaffold({
                       marginTop: 6,
                     }}
                   >
-                    TRAIN · TRACK · PROGRESS
+                    {t("TRAIN · TRACK · PROGRESS")}
                   </Text>
                 </View>
               </View>

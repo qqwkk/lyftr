@@ -4,6 +4,7 @@ import * as Haptics from 'expo-haptics'
 import Svg, { Path, Circle, Line, Text as SvgText, Defs, LinearGradient, Stop } from 'react-native-svg'
 import { AppText } from '../ui'
 import { useTheme } from '../../theme/useTheme'
+import { t } from '@lyftr/shared'
 
 // Weight-progression chart for ExerciseDetail. Ported from web's recharts LineChart
 // (monotone line #0891b2, per-point dots, x-axis date ticks, tap-to-read replacing the
@@ -78,7 +79,7 @@ export function ExerciseHistoryChart({
   width,
   unit,
   height = 132,
-  readoutNote = 'Max weight',
+  readoutNote = t('Max weight'),
 }: {
   data: ChartPoint[]
   width: number

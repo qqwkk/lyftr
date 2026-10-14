@@ -5,7 +5,7 @@ import { weightAPI } from '../services/api'
 import { useSettingsStore, weightShort, displayToLbs , weightError, maxWeight } from '../stores/settings'
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock'
 import { useEscapeKey } from '../hooks/useEscapeKey'
-import { useAsyncAction, todayStr, dayToInstant, entryDay, BODYWEIGHT_STEP, clampStep, types } from '@lyftr/shared'
+import { useAsyncAction, todayStr, dayToInstant, entryDay, BODYWEIGHT_STEP, clampStep, types, t } from '@lyftr/shared'
 import StepperTile from './ui/StepperTile'
 import NumberField from './ui/NumberField'
 
@@ -49,7 +49,7 @@ export default function QuickWeighInSheet({ isOpen, lastValue, lastLog, onClose,
     })
     onSuccess(log)
     onClose()
-  }, 'Failed to save')
+  }, t('Failed to save'))
 
   const handleClose = () => { setError(''); onClose() }
 
@@ -99,7 +99,7 @@ export default function QuickWeighInSheet({ isOpen, lastValue, lastLog, onClose,
             <div className="w-8 h-8 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center justify-center">
               <Scale className="w-4 h-4 text-brand-500" />
             </div>
-            <h2 id="qws-title" className="font-display font-bold text-lg text-tx-primary">Log Weight</h2>
+            <h2 id="qws-title" className="font-display font-bold text-lg text-tx-primary">{t("Log Weight")}</h2>
           </div>
           <button onClick={handleClose} className="p-1.5 hover:bg-surface-muted rounded-lg transition-colors">
             <X className="w-5 h-5 text-tx-muted" />
@@ -125,7 +125,7 @@ export default function QuickWeighInSheet({ isOpen, lastValue, lastLog, onClose,
                     onClick={() => setShowDuplicateWarning(false)}
                     className="px-3 py-1 rounded-lg text-xs font-medium bg-surface-overlay border border-surface-border text-tx-secondary hover:text-tx-primary transition-colors"
                   >
-                    Cancel
+                    {t('Cancel')}
                   </button>
                   <button
                     type="button"
@@ -136,7 +136,7 @@ export default function QuickWeighInSheet({ isOpen, lastValue, lastLog, onClose,
                     }}
                     className="px-3 py-1 rounded-lg text-xs font-medium bg-amber-500/20 border border-amber-500/30 text-amber-300 hover:bg-amber-500/30 transition-colors"
                   >
-                    Log Anyway
+                    {t('Log Anyway')}
                   </button>
                 </div>
               </div>
@@ -150,7 +150,7 @@ export default function QuickWeighInSheet({ isOpen, lastValue, lastLog, onClose,
             step={BODYWEIGHT_STEP}
             onStep={d => setValue(String(clampStep(parseFloat(value) || 0, d, { max: maxWeight(settings.weight_unit) })))}
           >
-            <NumberField value={value} onChange={setValue} autoFocus aria-label="Weight" />
+            <NumberField value={value} onChange={setValue} autoFocus aria-label={t("Weight")} />
           </StepperTile>
 
           {!showExtras ? (
@@ -165,7 +165,7 @@ export default function QuickWeighInSheet({ isOpen, lastValue, lastLog, onClose,
             <div className="space-y-3 pt-1">
               <div>
                 <label className="label">
-                  <Calendar className="w-3 h-3" /> Date
+                  <Calendar className="w-3 h-3" /> {t('Date')}
                 </label>
                 <input
                   type="date"
@@ -177,13 +177,13 @@ export default function QuickWeighInSheet({ isOpen, lastValue, lastLog, onClose,
               </div>
               <div>
                 <label className="label">
-                  <FileText className="w-3 h-3" /> Note <span className="text-tx-muted font-normal normal-case tracking-normal">(optional)</span>
+                  <FileText className="w-3 h-3" /> {t("Note")} <span className="text-tx-muted font-normal normal-case tracking-normal">{t("(optional)")}</span>
                 </label>
                 <input
                   type="text"
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  placeholder="e.g., morning, post-workout"
+                  placeholder={t("e.g., morning, post-workout")}
                   maxLength={200}
                   className="input mt-1"
                 />
@@ -197,7 +197,7 @@ export default function QuickWeighInSheet({ isOpen, lastValue, lastLog, onClose,
             className="btn-primary btn-lg w-full"
           >
             <Save className="w-4 h-4" />
-            {save.busy ? 'Saving…' : 'Save'}
+            {save.busy ? t('Saving…') : t('Save')}
           </button>
         </form>
       </div>

@@ -1,4 +1,5 @@
 import type { Program, ProgramDay } from '../types'
+import { t } from '../i18n'
 import { isDayStartable, todaysDay } from './programUtils'
 
 // Per-muscle accent for the dashboard's training-split chart. Hex rather than theme
@@ -36,16 +37,16 @@ const MUSCLE_ROAST: Record<string, string> = {
 }
 
 export const muscleRoast = (m: string): string =>
-  MUSCLE_ROAST[m?.toLowerCase()] ?? 'Mysterious training patterns. We respect it.'
+  t(MUSCLE_ROAST[m?.toLowerCase()] ?? 'Mysterious training patterns. We respect it.')
 
 // Time-of-day greeting on the dashboard. Takes the current time rather than reading the
 // clock itself, so the caller controls when "now" is sampled — and so this is testable
 // without faking timers.
 export function greeting(now: Date): string {
   const h = now.getHours()
-  if (h < 12) return 'Good morning'
-  if (h < 17) return 'Good afternoon'
-  return 'Good evening'
+  if (h < 12) return t('Good morning')
+  if (h < 17) return t('Good afternoon')
+  return t('Good evening')
 }
 
 // The "up next" card: the first program whose day-for-today actually has exercises.

@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Check, Pause, Play, SkipForward } from 'lucide-react-native'
 import { useWorkoutSession } from '../../lib/lyftr'
 import { useRestTimer } from '../../hooks/useRestTimer'
-import { fmtClock, nextIncompleteSet } from '@lyftr/shared'
+import { fmtClock, nextIncompleteSet, t } from '@lyftr/shared'
 import { AppText, IconButton } from '../ui'
 import { useTheme } from '../../theme/useTheme'
 
@@ -82,14 +82,14 @@ export function RestTimerBanner({ docked = false }: { docked?: boolean }) {
   const doneSetNum = restEx != null && restSetIdx != null ? restSetIdx + 1 : null
   const label =
     doneSetNum == null
-      ? done ? 'Rest over' : paused ? 'Paused' : 'Rest'
+      ? done ? t('Rest over') : paused ? t('Paused') : t('Rest')
       : done
-        ? nextIdx !== -1 ? `Rest over · set ${nextIdx + 1} next` : 'Rest over'
+        ? nextIdx !== -1 ? t('Rest over · set {number} next', { number: nextIdx + 1 }) : t('Rest over')
         : paused
-          ? `Set ${doneSetNum} done · paused`
+          ? t('Set {number} done · paused', { number: doneSetNum })
           : nextIdx !== -1
-            ? `Set ${doneSetNum} done · set ${nextIdx + 1} next`
-            : `Set ${doneSetNum} done · resting`
+            ? t('Set {number} done · set {next} next', { number: doneSetNum, next: nextIdx + 1 })
+            : t('Set {number} done · resting', { number: doneSetNum })
 
   // Urgency cue: the last 10 running seconds shift the drain + countdown to amber
   // (paused doesn't count down, so it never goes hot). Time-based (not fraction-based)
@@ -128,7 +128,7 @@ export function RestTimerBanner({ docked = false }: { docked?: boolean }) {
               <Check size={26} color={brand.success} />
             </Animated.View>
             <Pressable onPress={() => clearRest()} className="w-full items-center justify-center rounded-2xl bg-brand-500 py-4 active:scale-95">
-              <Text className="font-sans-bold text-base text-white">Done</Text>
+              <Text className="font-sans-bold text-base text-white">{t("Done")}</Text>
             </Pressable>
           </View>
         ) : (
@@ -139,7 +139,7 @@ export function RestTimerBanner({ docked = false }: { docked?: boolean }) {
               <View className="w-14 items-center">
                 <IconButton
                   icon={paused ? Play : Pause}
-                  label={paused ? 'Resume rest timer' : 'Pause rest timer'}
+                  label={paused ? t('Resume rest timer') : t('Pause rest timer')}
                   variant="brand"
                   size="lg"
                   onPress={paused ? resumeRest : pauseRest}
@@ -151,15 +151,15 @@ export function RestTimerBanner({ docked = false }: { docked?: boolean }) {
               <View className="w-14" />
             </View>
             <View className="flex-row gap-2.5">
-              <Pressable onPress={() => adjustRest(-15)} accessibilityLabel="Shorten rest by 15 seconds" className={secBtn}>
+              <Pressable onPress={() => adjustRest(-15)} accessibilityLabel={t("Shorten rest by 15 seconds")} className={secBtn}>
                 <Text className="font-sans-bold text-base text-tx-secondary" style={{ fontVariant: ['tabular-nums'] }}>−15</Text>
               </Pressable>
-              <Pressable onPress={() => adjustRest(15)} accessibilityLabel="Extend rest by 15 seconds" className={secBtn}>
+              <Pressable onPress={() => adjustRest(15)} accessibilityLabel={t("Extend rest by 15 seconds")} className={secBtn}>
                 <Text className="font-sans-bold text-base text-tx-secondary" style={{ fontVariant: ['tabular-nums'] }}>+15</Text>
               </Pressable>
               <Pressable onPress={() => clearRest()} className={brandBtn}>
                 <SkipForward size={18} color="#ffffff" />
-                <Text className="font-sans-bold text-base text-white">Skip</Text>
+                <Text className="font-sans-bold text-base text-white">{t("Skip")}</Text>
               </Pressable>
             </View>
           </>

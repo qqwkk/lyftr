@@ -6,7 +6,7 @@ import {
   Coffee, Sun, Moon, Cookie, ChevronRight,
 } from 'lucide-react'
 import { foodAPI, savedFoodsAPI } from '../services/api'
-import { apiErrorMessage, isNotFound, useAsyncAction, todayStr, dayToInstant, entryDay, MACRO_COLORS, types, entryToResult, savedToResult, scaleServing, useFavorites } from '@lyftr/shared'
+import { apiErrorMessage, isNotFound, useAsyncAction, todayStr, dayToInstant, entryDay, MACRO_COLORS, types, entryToResult, savedToResult, scaleServing, useFavorites, t } from '@lyftr/shared'
 import { ErrorState, ListError } from '../components/ui'
 import BarcodeScanner from '../components/BarcodeScanner'
 import BarcodeLookup from '../components/BarcodeLookup'
@@ -148,7 +148,7 @@ export default function LogFood() {
       setMeal(entry.meal)
       setDate(entryDay(entry))
       setPhase('detail')
-    }).catch(err => setEditError(apiErrorMessage(err, "The server didn't say what went wrong.")))
+    }).catch(err => setEditError(apiErrorMessage(err, t("The server didn't say what went wrong."))))
   }, [editId, navigate, editRetry])
 
   useEffect(() => {
@@ -165,10 +165,10 @@ export default function LogFood() {
       }
       setRecentItems(items)
       setRecentError(null)
-    }).catch(err => setRecentError(apiErrorMessage(err, "Couldn't load what you logged today.")))
+    }).catch(err => setRecentError(apiErrorMessage(err, t("Couldn't load what you logged today."))))
     savedFoodsAPI.list()
       .then(list => { setSavedFoods(list); setSavedError(null) })
-      .catch(err => setSavedError(apiErrorMessage(err, "Couldn't load your favourites.")))
+      .catch(err => setSavedError(apiErrorMessage(err, t("Couldn't load your favourites."))))
   }, [listReload, setSavedFoods])
 
   useEffect(() => {
@@ -183,7 +183,7 @@ export default function LogFood() {
         setSearchResults(await foodAPI.search(query.trim()) ?? [])
       } catch (err: any) {
         if (err?.response?.status === 429) setRateLimited(true)
-        else setSearchError('Food search unavailable — enter details manually')
+        else setSearchError(t('Food search unavailable — enter details manually'))
         setSearchResults([])
       } finally {
         setSearching(false)
@@ -200,7 +200,7 @@ export default function LogFood() {
 
   const enterManually = () => {
     setLookup(null)
-    selectResult({ name: '', calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, serving_size: '1 serving', source: 'manual' })
+    selectResult({ name: '', calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, serving_size: t('1 serving'), source: 'manual' })
   }
 
   const lookUpBarcode = async (code: string) => {
@@ -214,7 +214,7 @@ export default function LogFood() {
       // unreachable upstream is not an answer, and saying "not found" for it sent
       // people to type in a product that does exist.
       if (isNotFound(err)) enterManually()
-      else setLookup({ code, error: apiErrorMessage(err, "Couldn't look up that barcode.") })
+      else setLookup({ code, error: apiErrorMessage(err, t("Couldn't look up that barcode.")) })
     }
   }
 
@@ -230,7 +230,7 @@ export default function LogFood() {
           await foodAPI.log(payload)
         }
         navigate('/food', { replace: true })
-  }, 'Failed to save')
+  }, t('Failed to save'))
 
   const handleLog = async () => {
     if (!selected || save.busy) return
@@ -252,10 +252,10 @@ export default function LogFood() {
     return (
       <ErrorState
         size="page"
-        title="Couldn't load this entry"
+        title={t("Couldn't load this entry")}
         message={editError}
         onRetry={() => { setEditError(null); setEditRetry(k => k + 1) }}
-        secondary={<button onClick={() => navigate('/food')} className="btn-secondary btn-sm">Back to food</button>}
+        secondary={<button onClick={() => navigate('/food')} className="btn-secondary btn-sm">{t("Back to food")}</button>}
       />
     )
   }
@@ -272,7 +272,7 @@ export default function LogFood() {
       {/* Header with breadcrumb */}
       <div className="flex items-center gap-3 mb-5">
         <button
-          aria-label="Go back"
+          aria-label={t("Go back")}
           onClick={() => phase === 'detail' && !editId ? setPhase('search') : navigate(-1)}
           className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-muted active:scale-95 transition-all flex-shrink-0"
         >
@@ -282,17 +282,17 @@ export default function LogFood() {
           {phase === 'detail' && selected ? (
             <>
               <div className="flex items-center gap-1.5 text-xs text-tx-muted mb-0.5">
-                <span>{editId ? 'Edit Food' : 'Log Food'}</span>
+                <span>{editId ? t('Edit Food') : t('Log Food')}</span>
                 <ChevronRight className="w-3 h-3" />
-                <span className="text-tx-secondary">Details</span>
+                <span className="text-tx-secondary">{t("Details")}</span>
               </div>
               <h1 className="font-display font-bold text-xl text-tx-primary truncate">
-                {selected.name || 'New Entry'}
+                {selected.name || t('New Entry')}
               </h1>
               {selected.brand && <p className="text-xs text-tx-muted mt-0.5">{selected.brand}</p>}
             </>
           ) : (
-            <h1 className="font-display font-bold text-2xl text-tx-primary">Log Food</h1>
+            <h1 className="font-display font-bold text-2xl text-tx-primary">{t("Log Food")}</h1>
           )}
         </div>
         {/* Favouriting is decoupled from logging, so the star sits beside the food rather
@@ -334,7 +334,7 @@ export default function LogFood() {
                 type="text"
                 value={query}
                 onChange={e => { setQuery(e.target.value); if (e.target.value.trim()) setTab('all'); if (lookup?.error) setLookup(null) }}
-                placeholder="Search food…"
+                placeholder={t("Search food…")}
                 className="input pl-10 pr-10 w-full h-12 text-base"
               />
               {query && (
@@ -350,19 +350,19 @@ export default function LogFood() {
               onClick={() => setPhase('scan')}
               disabled={lookingUp}
               className="flex items-center gap-1.5 px-3.5 h-12 rounded-xl bg-surface-muted hover:bg-surface-overlay border border-surface-border text-tx-secondary hover:text-tx-primary transition-colors flex-shrink-0 disabled:opacity-40 disabled:pointer-events-none"
-              aria-label="Scan barcode"
+              aria-label={t("Scan barcode")}
             >
               <Scan className="w-5 h-5" />
-              <span className="text-xs font-medium">Scan</span>
+              <span className="text-xs font-medium">{t("Scan")}</span>
             </button>
           </div>
 
           {/* Tabs */}
           <SegmentedControl
             options={[
-              { value: 'recent', label: 'Recent' },
-              { value: 'myfoods', label: 'Favorites' },
-              { value: 'all', label: 'Search' },
+              { value: 'recent', label: t('Recent') },
+              { value: 'myfoods', label: t('Favorites') },
+              { value: 'all', label: t('Search') },
             ] as const}
             value={tab}
             onChange={t => { setTab(t); if (lookup?.error) setLookup(null) }}
@@ -371,7 +371,7 @@ export default function LogFood() {
           {rateLimited && (
             <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3.5 py-3 text-xs text-amber-400">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              Too many requests — wait a moment and try again
+              {t('Too many requests — wait a moment and try again')}
             </div>
           )}
           {searchError && (
@@ -389,17 +389,17 @@ export default function LogFood() {
             // what failed, and both ways forward keep the code already scanned.
             <div className="card">
               <ErrorState
-                title="Couldn't look up this barcode"
+                title={t("Couldn't look up this barcode")}
                 message={lookup.error}
                 onRetry={() => lookUpBarcode(lookup.code)}
-                secondary={<button onClick={enterManually} className="btn-secondary btn-sm">Enter it manually</button>}
+                secondary={<button onClick={enterManually} className="btn-secondary btn-sm">{t("Enter it manually")}</button>}
               />
             </div>
           ) : (
           <div className="card overflow-hidden">
             {tab === 'all' && quickAddCals !== null && (
               <button
-                onClick={() => selectResult({ name: `${quickAddCals} kcal`, calories: quickAddCals, protein: 0, carbs: 0, fat: 0, fiber: 0, serving_size: '1 serving', source: 'off' })}
+                onClick={() => selectResult({ name: `${quickAddCals} kcal`, calories: quickAddCals, protein: 0, carbs: 0, fat: 0, fiber: 0, serving_size: t('1 serving'), source: 'off' })}
                 className="flex items-center gap-3 w-full px-4 py-3.5 hover:bg-surface-muted transition-colors border-b border-surface-border"
               >
                 <div className="w-11 h-11 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center flex-shrink-0">
@@ -407,7 +407,7 @@ export default function LogFood() {
                 </div>
                 <div className="flex-1 text-left min-w-0">
                   <p className="text-sm font-semibold text-tx-primary">Quick add {quickAddCals} kcal</p>
-                  <p className="text-xs text-tx-muted mt-0.5">No macro breakdown</p>
+                  <p className="text-xs text-tx-muted mt-0.5">{t("No macro breakdown")}</p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-tx-muted flex-shrink-0" />
               </button>
@@ -415,13 +415,13 @@ export default function LogFood() {
 
             {tab === 'recent' && (
               recentError
-                ? <ListError subject="what you logged today" message={recentError} onRetry={() => { setRecentError(null); setListReload(n => n + 1) }} />
+                ? <ListError subject={t("what you logged today")} message={recentError} onRetry={() => { setRecentError(null); setListReload(n => n + 1) }} />
                 : recentItems.length === 0
                 ? (
                   <div className="px-4 py-14 text-center">
                     <Utensils className="w-8 h-8 text-tx-muted opacity-30 mx-auto mb-2" />
-                    <p className="text-sm text-tx-muted">No recent items today</p>
-                    <p className="text-xs text-tx-muted mt-1 opacity-60">Search or scan to log food</p>
+                    <p className="text-sm text-tx-muted">{t("No recent items today")}</p>
+                    <p className="text-xs text-tx-muted mt-1 opacity-60">{t("Search or scan to log food")}</p>
                   </div>
                 )
                 : recentItems.map((item) => (
@@ -438,13 +438,13 @@ export default function LogFood() {
 
             {tab === 'myfoods' && (
               savedError
-                ? <ListError subject="your favourites" message={savedError} onRetry={() => { setSavedError(null); setListReload(n => n + 1) }} />
+                ? <ListError subject={t("your favourites")} message={savedError} onRetry={() => { setSavedError(null); setListReload(n => n + 1) }} />
                 : savedFoods.length === 0
                 ? (
                   <div className="px-4 py-14 text-center">
                     <Star className="w-8 h-8 text-tx-muted opacity-30 mx-auto mb-2" />
-                    <p className="text-sm text-tx-muted">No favorites yet</p>
-                    <p className="text-xs text-tx-muted mt-1 opacity-60">Star foods while logging to find them here</p>
+                    <p className="text-sm text-tx-muted">{t("No favorites yet")}</p>
+                    <p className="text-xs text-tx-muted mt-1 opacity-60">{t("Star foods while logging to find them here")}</p>
                   </div>
                 )
                 : savedFoods.map(sf => {
@@ -465,18 +465,18 @@ export default function LogFood() {
             {tab === 'all' && !query.trim() && (
               <div className="px-4 py-14 text-center">
                 <Search className="w-8 h-8 text-tx-muted opacity-30 mx-auto mb-2" />
-                <p className="text-sm text-tx-muted">Search millions of foods</p>
-                <p className="text-xs text-tx-muted mt-1 opacity-60">Or scan a barcode</p>
+                <p className="text-sm text-tx-muted">{t("Search millions of foods")}</p>
+                <p className="text-xs text-tx-muted mt-1 opacity-60">{t("Or scan a barcode")}</p>
               </div>
             )}
             {tab === 'all' && query.trim() && searching && (
-              <div className="px-4 py-14 text-center text-sm text-tx-muted">Searching…</div>
+              <div className="px-4 py-14 text-center text-sm text-tx-muted">{t("Searching…")}</div>
             )}
             {tab === 'all' && query.trim() && !searching && searchResults.length === 0 && !searchError && !rateLimited && (
               <div className="px-4 py-14 text-center space-y-3">
                 <p className="text-sm text-tx-muted">No results for "{query}"</p>
                 <button
-                  onClick={() => selectResult({ name: query.trim(), calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, serving_size: '1 serving', source: 'off' })}
+                  onClick={() => selectResult({ name: query.trim(), calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, serving_size: t('1 serving'), source: 'off' })}
                   className="btn-secondary text-xs"
                 >
                   + Enter "{query.trim()}" manually
@@ -530,7 +530,7 @@ export default function LogFood() {
                 <div>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-5xl font-bold tabular-nums text-tx-primary leading-none">{cal}</span>
-                    <span className="text-sm text-tx-muted">kcal</span>
+                    <span className="text-sm text-tx-muted">{t("kcal")}</span>
                   </div>
                   {selected.serving_size && (
                     <p className="text-xs text-tx-muted mt-1">
@@ -546,15 +546,15 @@ export default function LogFood() {
                 {(pro + carb + fat_) > 0 && (
                   <div className="flex flex-col gap-1 items-end w-20 flex-shrink-0">
                     {[
-                      { label: 'P', value: pro, color: MACRO_COLORS.protein },
-                      { label: 'C', value: carb, color: MACRO_COLORS.carbs },
-                      { label: 'F', value: fat_, color: MACRO_COLORS.fat },
+                      { key: 'P', label: t('Protein'), value: pro, color: MACRO_COLORS.protein },
+                      { key: 'C', label: t('Carbs'), value: carb, color: MACRO_COLORS.carbs },
+                      { key: 'F', label: t('Fat'), value: fat_, color: MACRO_COLORS.fat },
                     ].map(m => {
                       const total = pro + carb + fat_
                       const pct = total > 0 ? Math.round((m.value / total) * 100) : 0
                       return (
-                        <div key={m.label} className="flex items-center gap-1.5 w-full">
-                          <span className="text-[10px] text-tx-muted w-3 text-right flex-shrink-0">{m.label}</span>
+                        <div key={m.key} className="flex items-center gap-1.5 w-full">
+                          <span className="text-[10px] text-tx-muted w-3 text-right flex-shrink-0">{m.label.charAt(0)}</span>
                           <div className="flex-1 h-1.5 bg-surface-muted rounded-full overflow-hidden">
                             <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: m.color }} />
                           </div>
@@ -569,10 +569,10 @@ export default function LogFood() {
               {/* Macro grid */}
               <div className="grid grid-cols-4 gap-2">
                 {[
-                  { label: 'Protein', value: pro, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-                  { label: 'Carbs',   value: carb, color: 'text-amber-400',   bg: 'bg-amber-500/10 border-amber-500/20' },
-                  { label: 'Fat',     value: fat_, color: 'text-violet-400',  bg: 'bg-violet-500/10 border-violet-500/20' },
-                  { label: 'Fiber',   value: fib,  color: 'text-tx-secondary', bg: 'bg-surface-muted border-surface-border' },
+                  { label: t('Protein'), value: pro, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
+                  { label: t('Carbs'),   value: carb, color: 'text-amber-400',   bg: 'bg-amber-500/10 border-amber-500/20' },
+                  { label: t('Fat'),     value: fat_, color: 'text-violet-400',  bg: 'bg-violet-500/10 border-violet-500/20' },
+                  { label: t('Fiber'),   value: fib,  color: 'text-tx-secondary', bg: 'bg-surface-muted border-surface-border' },
                 ].map(m => (
                   <div key={m.label} className={`rounded-xl border p-2.5 text-center ${m.bg}`}>
                     <p className={`text-sm font-bold tabular-nums ${m.color}`}>{m.value}g</p>
@@ -586,13 +586,13 @@ export default function LogFood() {
           {/* Servings */}
           <div className="card p-4 space-y-3">
             <div className="flex items-baseline gap-2">
-              <label className="label">Servings</label>
+              <label className="label">{t("Servings")}</label>
               {selected.serving_size && (
                 <span className="text-xs text-tx-muted">({selected.serving_size} each)</span>
               )}
             </div>
             <div className="flex items-center gap-3">
-              <IconButton icon={Minus} variant="secondary" size="lg" label="Decrease servings" onClick={() => setServings(s => Math.max(0.5, +(s - 0.5).toFixed(1)))} />
+              <IconButton icon={Minus} variant="secondary" size="lg" label={t("Decrease servings")} onClick={() => setServings(s => Math.max(0.5, +(s - 0.5).toFixed(1)))} />
               <input
                 type="number"
                 value={servings}
@@ -600,7 +600,7 @@ export default function LogFood() {
                 step="0.5" min="0.5"
                 className="input text-center flex-1 h-12 text-lg font-semibold tabular-nums"
               />
-              <IconButton icon={Plus} variant="secondary" size="lg" label="Increase servings" onClick={() => setServings(s => +(s + 0.5).toFixed(1))} />
+              <IconButton icon={Plus} variant="secondary" size="lg" label={t("Increase servings")} onClick={() => setServings(s => +(s + 0.5).toFixed(1))} />
             </div>
           </div>
 
@@ -608,7 +608,7 @@ export default function LogFood() {
           <div className="card p-4 space-y-5">
             {/* Meal */}
             <div className="space-y-3">
-              <label className="label">Meal</label>
+              <label className="label">{t("Meal")}</label>
               <div className="grid grid-cols-2 gap-2">
                 {MEALS.map(m => {
                   const MealIcon = MEAL_ICONS[m]
@@ -625,7 +625,7 @@ export default function LogFood() {
                       }`}
                     >
                       <MealIcon className={`w-4 h-4 flex-shrink-0 ${active ? iconColor : 'text-tx-muted'}`} />
-                      {MEAL_LABELS[m]}
+                      {t(MEAL_LABELS[m])}
                     </button>
                   )
                 })}
@@ -634,7 +634,7 @@ export default function LogFood() {
 
             <div className="border-t border-surface-border" />
 
-            <DateInput label="When" value={date} onChange={setDate} max={todayStr()} />
+            <DateInput label={t("When")} value={date} onChange={setDate} max={todayStr()} />
           </div>
 
         </div>
@@ -648,7 +648,7 @@ export default function LogFood() {
             disabled={save.busy}
             className="btn-primary btn-lg w-full"
           >
-            {save.busy ? 'Saving…' : editId ? 'Save Changes' : 'Log Food'}
+            {save.busy ? t('Saving…') : editId ? t('Save Changes') : t('Log Food')}
           </button>
         </div>
       )}

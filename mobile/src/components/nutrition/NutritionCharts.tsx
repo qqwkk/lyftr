@@ -1,8 +1,8 @@
+import { t, formatDay } from '@lyftr/shared'
 import { useState } from 'react'
 import { View } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import Svg, { Circle, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg'
-import { formatDay } from '@lyftr/shared'
 import { AppText } from '../ui'
 import { useTheme } from '../../theme/useTheme'
 import { MACRO_COLORS } from './nutritionMeta'
@@ -62,7 +62,7 @@ export function MacroRing({ value, target, color, label }: {
         </View>
       </View>
       <View className="items-center">
-        <AppText variant="bodySemibold" style={{ fontVariant: ['tabular-nums'] }}>{Math.round(fin(value))}g</AppText>
+        <AppText variant="bodySemibold" style={{ fontVariant: ['tabular-nums'] }}>{Math.round(fin(value))}{t("g")}</AppText>
         <AppText variant="caption" color="muted" style={{ fontSize: 10 }}>{hasTarget ? `${label} / ${Math.round(fin(target))}g` : label}</AppText>
       </View>
     </View>
@@ -124,9 +124,9 @@ export function MacroHistoryChart({ data, width, height = 200 }: {
         {/* y grid: baseline + max */}
         <Line x1={yAxisW} y1={yAt(0)} x2={width} y2={yAt(0)} stroke={colors.border} strokeWidth={1} />
         <SvgText x={yAxisW - 6} y={yAt(maxTotal) + 4} fontSize={10} fill={colors.txMuted} textAnchor="end">
-          {Math.round(maxTotal)}g
+          {Math.round(maxTotal)}{t("g")}
         </SvgText>
-        <SvgText x={yAxisW - 6} y={yAt(0) + 4} fontSize={10} fill={colors.txMuted} textAnchor="end">0g</SvgText>
+        <SvgText x={yAxisW - 6} y={yAt(0) + 4} fontSize={10} fill={colors.txMuted} textAnchor="end">{t("0g")}</SvgText>
 
         {/* stacked areas (n>=2) or stacked bars (n===1) */}
         {n >= 2
@@ -169,16 +169,16 @@ export function MacroHistoryChart({ data, width, height = 200 }: {
           <AppText variant="caption" color="muted">{formatDay(selPt.date, 'MMM d')}</AppText>
           <View className="mt-0.5 gap-0.5">
             {[
-              { label: 'Protein', value: selPt.protein, color: MACRO_COLORS.protein },
-              { label: 'Carbs', value: selPt.carbs, color: MACRO_COLORS.carbs },
-              { label: 'Fat', value: selPt.fat, color: MACRO_COLORS.fat },
+              { label: t('Protein'), value: selPt.protein, color: MACRO_COLORS.protein },
+              { label: t('Carbs'), value: selPt.carbs, color: MACRO_COLORS.carbs },
+              { label: t('Fat'), value: selPt.fat, color: MACRO_COLORS.fat },
             ].map((m) => (
               <View key={m.label} className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-1.5">
                   <View style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: m.color }} />
                   <AppText variant="caption" color="muted">{m.label}</AppText>
                 </View>
-                <AppText variant="caption" style={{ fontVariant: ['tabular-nums'] }}>{Math.round(fin(m.value))}g</AppText>
+                <AppText variant="caption" style={{ fontVariant: ['tabular-nums'] }}>{Math.round(fin(m.value))}{t("g")}</AppText>
               </View>
             ))}
           </View>

@@ -5,10 +5,7 @@ import * as Haptics from 'expo-haptics'
 import {
   AlertCircle, ArrowLeft, ChevronRight, Minus, Plus, Scan, Star, Utensils, Zap,
 } from 'lucide-react-native'
-import {
-  useAsyncAction, dayToInstant, entryDay, todayStr,
-  type FoodSearchResult,
-} from '@lyftr/shared'
+import { useAsyncAction, dayToInstant, entryDay, todayStr, type FoodSearchResult, t, apiErrorMessage, entryToResult, isNotFound, savedToResult, scaleServing, useFavorites } from '@lyftr/shared'
 import {
   Alert, AppText, Button, Card, DateInput, ErrorState, IconButton, Label, NumberField,
   NumericKeyboardAccessory, NUMERIC_ACCESSORY_ID, Screen, SearchField, SegmentedControl,
@@ -21,7 +18,6 @@ import {
 } from '../../../src/components/nutrition/nutritionMeta'
 import { client } from '../../../src/lib/lyftr'
 import { useTheme } from '../../../src/theme/useTheme'
-import { apiErrorMessage, entryToResult, isNotFound, savedToResult, scaleServing, useFavorites } from '@lyftr/shared'
 
 type Phase = 'search' | 'detail' | 'scan'
 type SearchTab = 'recent' | 'myfoods' | 'all'
@@ -92,7 +88,7 @@ export default function LogFood() {
       setMeal(entry.meal)
       setDate(entryDay(entry))
       setPhase('detail')
-    }).catch((err) => setEditError(apiErrorMessage(err, "Couldn't load that entry.")))
+    }).catch((err) => setEditError(apiErrorMessage(err, t("Couldn't load that entry."))))
   }, [editId])
 
   // Recent (today, deduped ≤10) + favourites.
@@ -143,7 +139,7 @@ export default function LogFood() {
         setSearchResults((await client.foodAPI.search(query.trim())) ?? [])
       } catch (err: any) {
         if (err?.response?.status === 429) setRateLimited(true)
-        else setSearchError('Food search unavailable — enter details manually')
+        else setSearchError(t('Food search unavailable — enter details manually'))
         setSearchResults([])
       } finally {
         setSearching(false)
@@ -161,7 +157,7 @@ export default function LogFood() {
 
   const enterManually = () => {
     setLookup(null)
-    selectResult({ name: '', calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, serving_size: '1 serving', source: 'manual' })
+    selectResult({ name: '', calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, serving_size: t('1 serving'), source: 'manual' })
   }
 
   const lookUpBarcode = async (code: string) => {
@@ -175,7 +171,7 @@ export default function LogFood() {
       // unreachable upstream is not an answer, and saying "not found" for it sent
       // people to type in a product that does exist.
       if (isNotFound(err)) enterManually()
-      else setLookup({ code, error: apiErrorMessage(err, "Couldn't look up that barcode.") })
+      else setLookup({ code, error: apiErrorMessage(err, t("Couldn't look up that barcode.")) })
     }
   }
 
@@ -199,7 +195,7 @@ export default function LogFood() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {})
         // Courier the confirmation to the dashboard toast: which meal (new) or 'Updated'.
         router.replace(`/nutrition?logged=${editId ? 'Updated' : encodeURIComponent(MEAL_LABELS[meal])}`)
-  }, 'Failed to save')
+  }, t('Failed to save'))
 
   const handleLog = async () => {
     if (!selected || save.busy) return
@@ -227,22 +223,22 @@ export default function LogFood() {
     <Screen>
       {/* Header */}
       <View className="flex-row items-center gap-3 py-4">
-        <Pressable onPress={goBack} className="h-10 w-10 items-center justify-center rounded-xl active:scale-95" accessibilityLabel="Back">
+        <Pressable onPress={goBack} className="h-10 w-10 items-center justify-center rounded-xl active:scale-95" accessibilityLabel={t("Back")}>
           <ArrowLeft size={20} color={colors.txMuted} />
         </Pressable>
         <View className="min-w-0 flex-1">
           {phase === 'detail' && selected ? (
             <>
               <View className="flex-row items-center gap-1.5">
-                <AppText variant="caption" color="muted">{editId ? 'Edit Food' : 'Log Food'}</AppText>
+                <AppText variant="caption" color="muted">{editId ? t('Edit Food') : t('Log Food')}</AppText>
                 <ChevronRight size={12} color={colors.txMuted} />
-                <AppText variant="caption" color="secondary">Details</AppText>
+                <AppText variant="caption" color="secondary">{t("Details")}</AppText>
               </View>
-              <AppText variant="title" numberOfLines={1}>{selected.name || 'New Entry'}</AppText>
+              <AppText variant="title" numberOfLines={1}>{selected.name || t('New Entry')}</AppText>
               {selected.brand ? <AppText variant="caption" color="muted">{selected.brand}</AppText> : null}
             </>
           ) : (
-            <AppText variant="title">Log Food</AppText>
+            <AppText variant="title">{t("Log Food")}</AppText>
           )}
         </View>
         {/* Favouriting is decoupled from logging, so the star lives beside the food
@@ -294,7 +290,7 @@ export default function LogFood() {
                 <SearchField
                   autoFocus
                   loading={tab === 'all' && searching}
-                  placeholder="Search food…"
+                  placeholder={t("Search food…")}
                   value={query}
                   onChangeText={(t) => { setQuery(t); if (t.trim()) setTab('all'); if (lookup?.error) setLookup(null) }}
                 />
@@ -302,24 +298,24 @@ export default function LogFood() {
               <Pressable
                 onPress={() => { hSelect(); setPhase('scan') }}
                 disabled={lookingUp}
-                accessibilityLabel="Scan barcode"
+                accessibilityLabel={t("Scan barcode")}
                 accessibilityState={{ disabled: lookingUp }}
                 className={`h-12 flex-row items-center gap-1.5 rounded-xl border border-surface-border bg-surface-muted px-3.5 active:opacity-70 ${lookingUp ? 'opacity-40' : ''}`}
               >
                 <Scan size={20} color={colors.txSecondary} />
-                <AppText variant="caption" color="secondary" style={{ fontWeight: '600' }}>Scan</AppText>
+                <AppText variant="caption" color="secondary" style={{ fontWeight: '600' }}>{t("Scan")}</AppText>
               </Pressable>
             </View>
 
             {/* Tabs */}
-            <SegmentedControl options={TAB_OPTIONS} value={tab} onChange={(t) => { setTab(t); if (lookup?.error) setLookup(null) }} />
+            <SegmentedControl options={TAB_OPTIONS.map(o => ({ ...o, label: t(o.label) }))} value={tab} onChange={(t) => { setTab(t); if (lookup?.error) setLookup(null) }} />
 
             {/* Above the tab content, not inside one branch: the star is on every tab, so
                 a failure starring a search result has to be visible on the search tab. */}
             {rateLimited ? (
               <View className="flex-row items-center gap-2 rounded-xl border border-warning-500/20 bg-warning-500/10 px-3.5 py-3">
                 <AlertCircle size={16} color={isDark ? brand.warningSoft : brand.warning} />
-                <AppText variant="caption" style={{ color: isDark ? brand.warningSoft : brand.warning }}>Too many requests — wait a moment and try again</AppText>
+                <AppText variant="caption" style={{ color: isDark ? brand.warningSoft : brand.warning }}>{t("Too many requests — wait a moment and try again")}</AppText>
               </View>
             ) : null}
             {searchError ? (
@@ -337,25 +333,25 @@ export default function LogFood() {
               // what failed, and both ways forward keep the code already scanned.
               <Card>
                 <ErrorState
-                  title="Couldn't look up this barcode"
+                  title={t("Couldn't look up this barcode")}
                   message={lookup.error}
                   onRetry={() => lookUpBarcode(lookup.code)}
-                  secondary={<Button title="Enter it manually" variant="secondary" onPress={enterManually} />}
+                  secondary={<Button title={t("Enter it manually")} variant="secondary" onPress={enterManually} />}
                 />
               </Card>
             ) : (
             <Card className="overflow-hidden p-0">
               {tab === 'all' && quickAddCals !== null ? (
                 <Pressable
-                  onPress={() => selectResult({ name: `${quickAddCals} kcal`, calories: quickAddCals, protein: 0, carbs: 0, fat: 0, fiber: 0, serving_size: '1 serving', source: 'off' })}
+                  onPress={() => selectResult({ name: `${quickAddCals} kcal`, calories: quickAddCals, protein: 0, carbs: 0, fat: 0, fiber: 0, serving_size: t('1 serving'), source: 'off' })}
                   className="w-full flex-row items-center gap-3 border-b border-surface-border px-4 py-3.5 active:bg-surface-muted"
                 >
                   <View className="h-11 w-11 items-center justify-center rounded-xl border border-brand-500/20 bg-brand-500/10">
                     <Zap size={20} color={accent} />
                   </View>
                   <View className="min-w-0 flex-1">
-                    <AppText variant="bodySemibold">Quick add {quickAddCals} kcal</AppText>
-                    <AppText variant="caption" color="muted" className="mt-0.5">No macro breakdown</AppText>
+                    <AppText variant="bodySemibold">{t("Quick add")} {quickAddCals} {t("kcal")}</AppText>
+                    <AppText variant="caption" color="muted" className="mt-0.5">{t("No macro breakdown")}</AppText>
                   </View>
                   <ChevronRight size={16} color={colors.txMuted} />
                 </Pressable>
@@ -363,7 +359,7 @@ export default function LogFood() {
 
               {tab === 'recent' ? (
                 recentItems.length === 0 ? (
-                  <EmptyBlock icon={Utensils} title="No recent items today" subtitle="Search or scan to log food" />
+                  <EmptyBlock icon={Utensils} title={t("No recent items today")} subtitle={t("Search or scan to log food")} />
                 ) : (
                   recentItems.map((item, i) => (
                     <FoodResultRow
@@ -380,7 +376,7 @@ export default function LogFood() {
 
               {tab === 'myfoods' ? (
                 savedFoods.length === 0 ? (
-                  <EmptyBlock icon={Star} title="No favorites yet" subtitle="Star foods while logging to find them here" />
+                  <EmptyBlock icon={Star} title={t("No favorites yet")} subtitle={t("Star foods while logging to find them here")} />
                 ) : (
                   <>
                     {savedFoods.map((sf) => (
@@ -398,19 +394,19 @@ export default function LogFood() {
               ) : null}
 
               {tab === 'all' && !query.trim() ? (
-                <EmptyBlock icon={Utensils} title="Search millions of foods" subtitle="Or scan a barcode" />
+                <EmptyBlock icon={Utensils} title={t("Search millions of foods")} subtitle={t("Or scan a barcode")} />
               ) : null}
               {tab === 'all' && query.trim() && searching ? (
-                <View className="px-4 py-14"><AppText variant="body" color="muted" className="text-center">Searching…</AppText></View>
+                <View className="px-4 py-14"><AppText variant="body" color="muted" className="text-center">{t("Searching…")}</AppText></View>
               ) : null}
               {tab === 'all' && query.trim() && !searching && searchResults.length === 0 && !searchError && !rateLimited ? (
                 <View className="items-center gap-3 px-4 py-14">
-                  <AppText variant="body" color="muted">No results for "{query}"</AppText>
+                  <AppText variant="body" color="muted">{t("No results for \"")}{query}"</AppText>
                   <Pressable
-                    onPress={() => selectResult({ name: query.trim(), calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, serving_size: '1 serving', source: 'off' })}
+                    onPress={() => selectResult({ name: query.trim(), calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, serving_size: t('1 serving'), source: 'off' })}
                     className="rounded-lg border border-surface-border bg-surface-overlay px-3 py-2 active:opacity-70"
                   >
-                    <AppText variant="caption" color="secondary">＋ Enter "{query.trim()}" manually</AppText>
+                    <AppText variant="caption" color="secondary">{t("＋ Enter \"")}{query.trim()}{t("\" manually")}</AppText>
                   </Pressable>
                 </View>
               ) : null}
@@ -457,18 +453,18 @@ export default function LogFood() {
                     <View>
                       <View className="flex-row items-baseline gap-1.5">
                         <AppText variant="display" style={{ fontSize: 44, lineHeight: 46, fontVariant: ['tabular-nums'] }}>{cal}</AppText>
-                        <AppText variant="body" color="muted">kcal</AppText>
+                        <AppText variant="body" color="muted">{t("kcal")}</AppText>
                       </View>
                       {selected.serving_size ? (
-                        <AppText variant="caption" color="muted" className="mt-1">per {servings === 1 ? '' : `${servings} × `}{selected.serving_size}</AppText>
+                        <AppText variant="caption" color="muted" className="mt-1">{t("per")} {servings === 1 ? '' : `${servings} × `}{selected.serving_size}</AppText>
                       ) : null}
                     </View>
                     {pro + carb + fat_ > 0 ? (
                       <View className="w-24 flex-col items-end gap-1">
                         {[
-                          { label: 'P', value: pro, color: MACRO_COLORS.protein },
-                          { label: 'C', value: carb, color: MACRO_COLORS.carbs },
-                          { label: 'F', value: fat_, color: MACRO_COLORS.fat },
+                          { key: 'P', label: t('Protein'), value: pro, color: MACRO_COLORS.protein },
+                          { key: 'C', label: t('Carbs'), value: carb, color: MACRO_COLORS.carbs },
+                          { key: 'F', label: t('Fat'), value: fat_, color: MACRO_COLORS.fat },
                         ].map((m) => {
                           const total = pro + carb + fat_
                           const pct = total > 0 ? Math.round((m.value / total) * 100) : 0
@@ -490,13 +486,13 @@ export default function LogFood() {
                   {/* Macro grid */}
                   <View className="flex-row gap-2">
                     {[
-                      { label: 'Protein', value: pro, color: MACRO_TEXT.protein, bg: 'rgba(16,185,129,0.10)', border: 'rgba(16,185,129,0.20)' },
-                      { label: 'Carbs', value: carb, color: MACRO_TEXT.carbs, bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.20)' },
-                      { label: 'Fat', value: fat_, color: MACRO_TEXT.fat, bg: 'rgba(139,92,246,0.10)', border: 'rgba(139,92,246,0.20)' },
-                      { label: 'Fiber', value: fib, color: colors.txSecondary, bg: colors.muted, border: colors.border },
+                      { label: t('Protein'), value: pro, color: MACRO_TEXT.protein, bg: 'rgba(16,185,129,0.10)', border: 'rgba(16,185,129,0.20)' },
+                      { label: t('Carbs'), value: carb, color: MACRO_TEXT.carbs, bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.20)' },
+                      { label: t('Fat'), value: fat_, color: MACRO_TEXT.fat, bg: 'rgba(139,92,246,0.10)', border: 'rgba(139,92,246,0.20)' },
+                      { label: t('Fiber'), value: fib, color: colors.txSecondary, bg: colors.muted, border: colors.border },
                     ].map((m) => (
                       <View key={m.label} className="flex-1 items-center rounded-xl border p-2.5" style={{ backgroundColor: m.bg, borderColor: m.border }}>
-                        <AppText variant="bodySemibold" style={{ color: m.color, fontVariant: ['tabular-nums'] }}>{m.value}g</AppText>
+                        <AppText variant="bodySemibold" style={{ color: m.color, fontVariant: ['tabular-nums'] }}>{m.value}{t("g")}</AppText>
                         <AppText variant="caption" color="muted" style={{ fontSize: 10 }} className="mt-0.5">{m.label}</AppText>
                       </View>
                     ))}
@@ -507,28 +503,28 @@ export default function LogFood() {
               {/* Servings */}
               <Card className="gap-3">
                 <View className="flex-row items-baseline gap-2">
-                  <Label>Servings</Label>
-                  {selected.serving_size ? <AppText variant="caption" color="muted">({selected.serving_size} each)</AppText> : null}
+                  <Label>{t("Servings")}</Label>
+                  {selected.serving_size ? <AppText variant="caption" color="muted">({selected.serving_size} {t("each)")}</AppText> : null}
                 </View>
                 <View className="flex-row items-center gap-3">
-                  <IconButton icon={Minus} variant="secondary" size="lg" label="Decrease servings" onPress={() => stepServings(-0.5)} />
+                  <IconButton icon={Minus} variant="secondary" size="lg" label={t("Decrease servings")} onPress={() => stepServings(-0.5)} />
                   <View className="flex-1">
                     <NumberField
                       inputMode="decimal"
                       value={servingsStr}
                       onChange={setServingsStr}
-                      accessibilityLabel="Servings"
+                      accessibilityLabel={t("Servings")}
                       inputAccessoryViewID={NUMERIC_ACCESSORY_ID}
                     />
                   </View>
-                  <IconButton icon={Plus} variant="secondary" size="lg" label="Increase servings" onPress={() => stepServings(0.5)} />
+                  <IconButton icon={Plus} variant="secondary" size="lg" label={t("Increase servings")} onPress={() => stepServings(0.5)} />
                 </View>
               </Card>
 
               {/* Meal + when */}
               <Card className="gap-5">
                 <View className="gap-3">
-                  <Label>Meal</Label>
+                  <Label>{t("Meal")}</Label>
                   <View className="flex-row flex-wrap gap-2">
                     {MEALS.map((m) => {
                       const MealIcon = MEAL_ICONS[m]
@@ -541,7 +537,7 @@ export default function LogFood() {
                           className={`flex-row items-center gap-2.5 rounded-xl border px-3.5 py-3 ${active ? 'border-brand-500/40 bg-brand-500/10' : 'border-surface-border bg-surface-muted'}`}
                         >
                           <MealIcon size={16} color={active ? MEAL_COLORS[m] : colors.txMuted} />
-                          <AppText variant="bodySemibold" style={{ fontSize: 13 }} color={active ? 'primary' : 'secondary'}>{MEAL_LABELS[m]}</AppText>
+                          <AppText variant="bodySemibold" style={{ fontSize: 13 }} color={active ? 'primary' : 'secondary'}>{t(MEAL_LABELS[m])}</AppText>
                         </Pressable>
                       )
                     })}
@@ -550,7 +546,7 @@ export default function LogFood() {
 
                 <View className="h-px bg-surface-border" />
 
-                <DateInput label="When" value={date} onChange={setDate} maximumDate={new Date()} />
+                <DateInput label={t("When")} value={date} onChange={setDate} maximumDate={new Date()} />
               </Card>
 
             </View>
@@ -559,7 +555,7 @@ export default function LogFood() {
           {/* Sticky log button */}
           <View className="border-t border-surface-border bg-surface-base pb-6 pt-3">
             <Button
-              title={save.busy ? 'Saving…' : editId ? 'Save Changes' : 'Log Food'}
+              title={save.busy ? t('Saving…') : editId ? t('Save Changes') : t('Log Food')}
               onPress={handleLog}
               loading={save.busy}
               disabled={save.busy}

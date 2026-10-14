@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { apiErrorMessage } from '../client'
 import type { FoodSearchResult, SavedFood } from '../types'
 import { findSavedFood, normaliseFoodKey } from '../utils/food'
+import { t } from '../i18n'
 
 /** The slice of the saved-foods API a toggle needs; both apps pass their client's. */
 export interface SavedFoodsApi {
@@ -94,8 +95,8 @@ export function useFavorites(api: SavedFoodsApi): Favorites {
       return 'added'
     } catch (err) {
       setError(apiErrorMessage(err, existing
-        ? `Couldn't remove ${item.name} from Favorites.`
-        : `Couldn't add ${item.name} to Favorites.`))
+        ? t("Couldn't remove {name} from Favorites.", { name: item.name })
+        : t("Couldn't add {name} to Favorites.", { name: item.name })))
       return null
     } finally {
       epoch.current += 1

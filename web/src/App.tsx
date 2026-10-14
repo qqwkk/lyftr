@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect } from 'react'
+import { t, useLanguage } from '@lyftr/shared'
 import { useAuthStore } from './stores/auth'
 import { useSettingsStore } from './stores/settings'
 import Layout from './components/Layout'
@@ -26,6 +27,11 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 
 function App() {
+  const language = useLanguage()
+  useEffect(() => {
+    document.documentElement.lang = language
+    document.title = t('Lyftr — Workout & Nutrition Tracker')
+  }, [language])
   const { isAuthenticated } = useAuthStore()
   const { fetch: fetchSettings, reset: resetSettings } = useSettingsStore()
 

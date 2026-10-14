@@ -4,6 +4,10 @@ import { recordCreatedUser } from './userRegistry'
 // These run logged-out, so override the shared authenticated storage state.
 test.use({ storageState: { cookies: [], origins: [] } })
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('lyftr_language', 'en'))
+})
+
 // @mobile: critical smoke that auth + the app shell work at phone viewport.
 test('registers a new user and lands on the dashboard', { tag: '@mobile' }, async ({ page }) => {
   const email = `e2e+${Date.now()}@lyftr.local`

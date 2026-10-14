@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react-native'
 import { AppText } from './Typography'
 import { SheetButton } from './SheetButton'
 import { Sheet, SHEET_ANIM_MS } from './Sheet'
+import { t } from '@lyftr/shared'
 
 export interface SheetAction {
   label: string
@@ -37,7 +38,7 @@ interface Props {
 // when there are exactly two. An action's onPress fires *after* the sheet dismisses so
 // a follow-up modal (e.g. a delete ConfirmSheet) isn't presented mid-close.
 export function ActionSheet({
-  open, title, subtitle, header, actions, cancelLabel = 'Cancel', layout = 'stack', onClose,
+  open, title, subtitle, header, actions, cancelLabel = t('Cancel'), layout = 'stack', onClose,
 }: Props) {
   const run = (onPress: () => void) => {
     onClose()

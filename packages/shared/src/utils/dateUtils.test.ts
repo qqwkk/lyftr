@@ -1,4 +1,6 @@
-import { todayStr, dayToInstant, dayToLocalDate, instantToDay, entryDay, workoutDay, memberSince, withLoggedOn, formatDay, UNKNOWN_DAY } from './dateUtils'
+import { createMemoryStorage } from '../testing/memoryStorage'
+import { hydrateLanguage, LANGUAGE_KEY } from '../i18n'
+import { todayStr, dayToInstant, dayToLocalDate, instantToDay, entryDay, workoutDay, memberSince, withLoggedOn, formatDay, formatLocalized, UNKNOWN_DAY } from './dateUtils'
 
 
 describe('dayToInstant', () => {
@@ -248,5 +250,38 @@ describe('memberSince', () => {
   it('does not shift the month with the reader\'s timezone', () => {
     expect(memberSince('2026-09-01T00:30:00Z')).toBe('September 2026')
     expect(memberSince('2026-08-31T23:30:00Z')).toBe('August 2026')
+  })
+})
+
+// A date is interface copy too: an app in Russian that labels a chart "Apr 25" is still
+// half in English. Every display pattern goes through formatLocalized, and the Russian
+// side reorders the ones that read day-after-month in English.
+//
+// This file's language is pinned to English by jest.setup.ts (see it for why), so these
+// cases say which language they are asserting.
+describe('formatLocalized', () => {
+  const APRIL_25 = new Date(2026, 3, 25)
+
+  afterEach(async () => {
+    await hydrateLanguage(createMemoryStorage({ [LANGUAGE_KEY]: 'en' }))
+  })
+
+  it('reads month-first in English', () => {
+    expect(formatLocalized(APRIL_25, 'MMM d, yyyy')).toBe('Apr 25, 2026')
+    expect(formatLocalized(APRIL_25, 'EEEE, MMMM d')).toBe('Saturday, April 25')
+  })
+
+  it('reads day-first, in Russian, once the language is Russian', async () => {
+    await hydrateLanguage(createMemoryStorage({ [LANGUAGE_KEY]: 'ru' }))
+    expect(formatLocalized(APRIL_25, 'MMM d, yyyy')).toBe('25 апр. 2026')
+    expect(formatLocalized(APRIL_25, 'EEEE, MMMM d')).toBe('суббота, 25 апреля')
+    // A pattern with no Russian reordering still gets the Russian month names.
+    expect(formatLocalized(APRIL_25, 'MMM')).toBe('апр.')
+  })
+
+  it("names the join month in the reader's language", async () => {
+    expect(memberSince('2026-09-01T00:30:00Z')).toBe('September 2026')
+    await hydrateLanguage(createMemoryStorage({ [LANGUAGE_KEY]: 'ru' }))
+    expect(memberSince('2026-09-01T00:30:00Z')).toBe('сентябрь 2026')
   })
 })

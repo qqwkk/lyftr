@@ -5,7 +5,7 @@ import type { Exercise } from '@lyftr/shared'
 import { AppText, IconButton, Label } from '../ui'
 import { ExerciseImage } from './ExerciseImage'
 import { RestPicker } from './RestPicker'
-import { sanitizeNumericInput, useNumericText } from '@lyftr/shared'
+import { sanitizeNumericInput, useNumericText, t } from '@lyftr/shared'
 import { useTheme } from '../../theme/useTheme'
 
 interface SetData {
@@ -76,9 +76,9 @@ function WeightCell({ value, onChange, placeholderColor, inputRef, onNext, input
       onSubmitEditing={onNext}
       selectTextOnFocus
       inputAccessoryViewID={inputAccessoryViewID}
-      placeholder="0"
+      placeholder={t("0")}
       placeholderTextColor={placeholderColor}
-      accessibilityLabel="Set weight"
+      accessibilityLabel={t("Set weight")}
       className={CELL}
       style={{ fontVariant: ['tabular-nums'] }}
     />
@@ -142,8 +142,8 @@ function ExerciseFormCardBase({
       {/* Set table — column labels once, then one tight row per set. */}
       <View className="gap-1.5">
         <View className="flex-row items-center gap-2">
-          <View className={`${COL_SET} items-center`}><Label>Set</Label></View>
-          <View className="flex-1 items-center"><Label>Reps</Label></View>
+          <View className={`${COL_SET} items-center`}><Label>{t("Set")}</Label></View>
+          <View className="flex-1 items-center"><Label>{t("Reps")}</Label></View>
           <View className="flex-1 items-center"><Label>{`Weight (${unit})`}</Label></View>
           <View className={COL_DELETE} />
         </View>
@@ -165,9 +165,9 @@ function ExerciseFormCardBase({
                 onSubmitEditing={() => weightRefs.current[setIdx]?.focus()}
                 selectTextOnFocus
                 inputAccessoryViewID={inputAccessoryViewID}
-                placeholder="0"
+                placeholder={t("0")}
                 placeholderTextColor={colors.txMuted}
-                accessibilityLabel="Set reps"
+                accessibilityLabel={t("Set reps")}
                 className={CELL}
                 style={{ fontVariant: ['tabular-nums'] }}
               />
@@ -185,7 +185,7 @@ function ExerciseFormCardBase({
               />
             </View>
             <View className={`${COL_DELETE} items-center`}>
-              <IconButton icon={X} label="Remove set" variant="ghost" size="sm" onPress={() => onRemoveSet(index, setIdx)} />
+              <IconButton icon={X} label={t("Remove set")} variant="ghost" size="sm" onPress={() => onRemoveSet(index, setIdx)} />
             </View>
           </View>
         ))}
@@ -203,18 +203,18 @@ function ExerciseFormCardBase({
         >
           <Plus size={13} color={accent} />
           {/* accent (not text-brand-500): raw brand cyan washes out on light. */}
-          <Text className="font-sans-semibold text-xs" style={{ color: accent }}>Add Set</Text>
+          <Text className="font-sans-semibold text-xs" style={{ color: accent }}>{t("Add Set")}</Text>
         </Pressable>
         {!showNotes && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Add exercise note"
+            accessibilityLabel={t("Add exercise note")}
             onPress={() => setShowNotes(true)}
             hitSlop={{ top: 6, bottom: 6 }}
             className="h-9 flex-row items-center gap-1.5 rounded-lg px-3 active:opacity-60"
           >
             <FileText size={13} color={colors.txMuted} />
-            <Text className="font-sans-semibold text-xs text-tx-muted">Note</Text>
+            <Text className="font-sans-semibold text-xs text-tx-muted">{t("Note")}</Text>
           </Pressable>
         )}
       </View>
@@ -226,14 +226,14 @@ function ExerciseFormCardBase({
           <TextInput
             value={notes}
             onChangeText={(t) => onNotesChange(index, t)}
-            placeholder="e.g., Felt strong"
+            placeholder={t("e.g., Felt strong")}
             placeholderTextColor={colors.txMuted}
-            accessibilityLabel="Exercise notes"
+            accessibilityLabel={t("Exercise notes")}
             className="h-9 flex-1 rounded-lg border border-surface-border/60 bg-surface-overlay px-3 py-0 font-sans text-sm text-tx-primary"
           />
           <IconButton
             icon={X}
-            label="Remove note"
+            label={t("Remove note")}
             variant="ghost"
             size="sm"
             onPress={() => { onNotesChange(index, ''); setShowNotes(false) }}
@@ -247,7 +247,7 @@ function ExerciseFormCardBase({
       <View className="mt-3 border-t border-surface-border/60 pt-3">
         <View className="mb-1 flex-row items-center gap-1.5">
           <Timer size={13} color={accent} />
-          <Label>Rest between sets</Label>
+          <Label>{t("Rest between sets")}</Label>
         </View>
         <RestPicker value={restSeconds} onChange={(secs) => onRestChange(index, secs)} />
       </View>

@@ -1,3 +1,5 @@
+import { t } from '../i18n'
+
 // What makes a new password acceptable, in one place for both apps.
 //
 // Three screens ask for one — web sign-up, web change-password, mobile change-password —
@@ -105,13 +107,13 @@ export function newPasswordRules({ password, confirm, current }: NewPasswordInpu
  */
 export function lengthRuleLabel(password = ''): string {
   if (byteLength(password) > MAX_PASSWORD_BYTES) {
-    return `At most ${MAX_PASSWORD_BYTES} characters (accents and emoji count for more)`
+    return t('At most {count} characters (accents and emoji count for more)', { count: MAX_PASSWORD_BYTES })
   }
-  return `At least ${MIN_PASSWORD_LENGTH} characters`
+  return t('At least {count} characters', { count: MIN_PASSWORD_LENGTH })
 }
 
 export function differentRuleLabel(): string {
-  return 'Different from your current password'
+  return t('Different from your current password')
 }
 
 /**
@@ -122,10 +124,10 @@ export function differentRuleLabel(): string {
 export function matchRuleLabel(state: RuleState): string {
   switch (state) {
     case 'ok':
-      return 'Passwords match'
+      return t('Passwords match')
     case 'bad':
-      return 'Passwords do not match'
+      return t('Passwords do not match')
     default:
-      return 'Repeat the new password'
+      return t('Repeat the new password')
   }
 }

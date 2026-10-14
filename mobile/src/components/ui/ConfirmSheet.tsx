@@ -5,6 +5,7 @@ import { AppText } from './Typography'
 import { Alert } from './Alert'
 import { SheetButton } from './SheetButton'
 import { Sheet } from './Sheet'
+import { t } from '@lyftr/shared'
 
 export interface ConfirmSheetProps {
   open: boolean
@@ -32,7 +33,7 @@ export interface ConfirmSheetProps {
 // is centered under it, and a Cancel / confirm button pair sits below. The sheet
 // chrome (slide-up, scrim, insets, grabber) lives in the generic Sheet.
 export function ConfirmSheet({
-  open, title, message, confirmLabel, busyLabel, cancelLabel = 'Cancel',
+  open, title, message, confirmLabel, busyLabel, cancelLabel = t('Cancel'),
   destructive = false, icon: Icon, busy = false, error, onConfirm, onCancel,
 }: ConfirmSheetProps) {
   const { brand, accent, isDark } = useTheme()

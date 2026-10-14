@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Pressable, View } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { Scale, X } from 'lucide-react-native'
-import { useAsyncAction, dayToInstant, displayToLbs, maxWeight, todayStr, weightError, weightShort, type WeightLog, entryDay, BODYWEIGHT_STEP, clampStep } from '@lyftr/shared'
+import { useAsyncAction, dayToInstant, displayToLbs, maxWeight, todayStr, weightError, weightShort, type WeightLog, entryDay, BODYWEIGHT_STEP, clampStep, t } from '@lyftr/shared'
 import {
   Alert, AppText, Button, DateInput, Field, NumberField, NumericKeyboardAccessory, NUMERIC_ACCESSORY_ID,
   Sheet, StepperTile,
@@ -58,7 +58,7 @@ export function QuickWeighInSheet({ open, lastValue, lastLog, onClose, onSuccess
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {})
     onSuccess(log)
     onClose()
-  }, 'Failed to save')
+  }, t('Failed to save'))
 
   const submit = async (forceDismissed = false) => {
     if (save.busy) return
@@ -86,9 +86,9 @@ export function QuickWeighInSheet({ open, lastValue, lastLog, onClose, onSuccess
             <View className="h-8 w-8 items-center justify-center rounded-lg border border-brand-500/20 bg-brand-500/10">
               <Scale size={16} color={accent} />
             </View>
-            <AppText variant="heading">Log Weight</AppText>
+            <AppText variant="heading">{t("Log Weight")}</AppText>
           </View>
-          <Pressable onPress={onClose} hitSlop={8} className="p-1.5 active:opacity-60" accessibilityLabel="Close">
+          <Pressable onPress={onClose} hitSlop={8} className="p-1.5 active:opacity-60" accessibilityLabel={t("Close")}>
             <X size={20} color={colors.txMuted} />
           </Pressable>
         </View>
@@ -102,15 +102,15 @@ export function QuickWeighInSheet({ open, lastValue, lastLog, onClose, onSuccess
             <Alert
               variant="warning"
               actions={[
-                { label: 'Cancel', onPress: () => setShowDuplicateWarning(false) },
+                { label: t('Cancel'), onPress: () => setShowDuplicateWarning(false) },
                 {
-                  label: 'Log Anyway',
+                  label: t('Log Anyway'),
                   primary: true,
                   onPress: () => { setDupDismissed(true); setShowDuplicateWarning(false); submit(true) },
                 },
               ]}
             >
-              Already logged today ({lastValue} {wUnit}). Log again anyway?
+              {t("Already logged today (")}{lastValue} {wUnit}{t("). Log again anyway?")}
             </Alert>
           ) : null}
 
@@ -125,31 +125,31 @@ export function QuickWeighInSheet({ open, lastValue, lastLog, onClose, onSuccess
               inputMode="decimal"
               value={value}
               onChange={setValue}
-              placeholder="0"
-              accessibilityLabel="Weight"
+              placeholder={t("0")}
+              accessibilityLabel={t("Weight")}
               inputAccessoryViewID={NUMERIC_ACCESSORY_ID}
             />
           </StepperTile>
 
           {!showExtras ? (
             <Pressable onPress={() => setShowExtras(true)} hitSlop={6} className="self-start active:opacity-60">
-              <AppText variant="caption" color="brand">+ Change date or add a note</AppText>
+              <AppText variant="caption" color="brand">{t("+ Change date or add a note")}</AppText>
             </Pressable>
           ) : (
             <View className="gap-3">
-              <DateInput label="Date" value={date} onChange={setDate} maximumDate={new Date()} />
+              <DateInput label={t("Date")} value={date} onChange={setDate} maximumDate={new Date()} />
               <Field
-                label="Note (optional)"
+                label={t("Note (optional)")}
                 value={notes}
                 onChangeText={setNotes}
-                placeholder="e.g., morning, post-workout"
+                placeholder={t("e.g., morning, post-workout")}
                 maxLength={200}
               />
             </View>
           )}
 
           <Button
-            title={save.busy ? 'Saving…' : 'Save'}
+            title={save.busy ? t('Saving…') : t('Save')}
             onPress={() => submit()}
             loading={save.busy}
             disabled={!(parseFloat(value) > 0) || save.busy}

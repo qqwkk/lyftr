@@ -9,7 +9,7 @@ import { useAuthStore } from '../stores/auth'
 import { useTheme } from '../hooks/useTheme'
 import { useWorkoutSession } from '../stores/workoutSession'
 import { useRestTimer } from '../hooks/useRestTimer'
-import { fmtClock, formatElapsed, useElapsedSeconds } from '@lyftr/shared'
+import { fmtClock, formatElapsed, useElapsedSeconds, t } from '@lyftr/shared'
 import { useSettingsStore, weightShort } from '../stores/settings'
 import GymModeWorkout from '../pages/GymModeWorkout'
 import RestTimerBanner from './RestTimerBanner'
@@ -67,7 +67,7 @@ function ActiveSessionBar() {
         {resting && (
           <div className="flex items-center gap-1.5 pl-2.5 py-1 pr-1 rounded-full bg-white/15 flex-shrink-0">
             <span className="text-[10px] font-semibold uppercase tracking-wide text-white/70 leading-none">
-              {done ? 'Rest over' : paused ? 'Paused' : 'Rest'}
+              {done ? t('Rest over') : paused ? t('Paused') : t('Rest')}
             </span>
             {!done && <span className="text-xs font-bold text-white tabular-nums leading-none">{fmtClock(left)}</span>}
           </div>
@@ -104,7 +104,7 @@ function UserMenu() {
             ? 'ring-2 ring-brand-500 ring-offset-2 ring-offset-surface-base'
             : 'hover:ring-2 hover:ring-surface-border hover:ring-offset-2 hover:ring-offset-surface-base'
         }`}
-        aria-label="User menu"
+        aria-label={t("User menu")}
       >
         <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0891b2, #00b8d9)' }}>
           <span className="text-sm font-bold text-white leading-none">{initial}</span>
@@ -127,15 +127,15 @@ function UserMenu() {
               className="flex items-center gap-3 px-4 py-2.5 text-sm text-tx-secondary hover:text-tx-primary hover:bg-surface-muted/50 transition-colors"
             >
               <User className="w-4 h-4 text-tx-muted flex-shrink-0" />
-              Settings
+              {t('Settings')}
             </Link>
             <button
               onClick={toggleTheme}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-tx-secondary hover:text-tx-primary hover:bg-surface-muted/50 transition-colors"
             >
               {theme === 'dark'
-                ? <><Sun className="w-4 h-4 text-tx-muted flex-shrink-0" />Light mode</>
-                : <><Moon className="w-4 h-4 text-tx-muted flex-shrink-0" />Dark mode</>
+                ? <><Sun className="w-4 h-4 text-tx-muted flex-shrink-0" />{t("Light mode")}</>
+                : <><Moon className="w-4 h-4 text-tx-muted flex-shrink-0" />{t("Dark mode")}</>
               }
             </button>
           </div>
@@ -147,7 +147,7 @@ function UserMenu() {
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-error-400 hover:bg-error-500/10 transition-colors"
             >
               <LogOut className="w-4 h-4 flex-shrink-0" />
-              Sign out
+              {t('Sign out')}
             </button>
           </div>
         </div>
@@ -189,7 +189,7 @@ export default function Layout() {
         {/* Keyed on the path so the boundary RESETS on navigation: without the key a
             crash on one route would follow the user to every other one, turning a bad
             row on /workouts into an app that looks broken everywhere. */}
-        <ErrorBoundary key={pathname} subject="this page">
+        <ErrorBoundary key={pathname} subject={t("this page")}>
           <Outlet />
         </ErrorBoundary>
       </main>
@@ -215,7 +215,7 @@ export default function Layout() {
               return (
                 <Link key={path} to={path} className={`nav-item flex-1 ${active ? 'active' : ''}`}>
                   <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 1.75} />
-                  <span>{label}</span>
+                  <span>{t(label)}</span>
                 </Link>
               )
             })}

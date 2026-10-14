@@ -1,3 +1,4 @@
+import { t } from '@lyftr/shared'
 import { useEffect } from 'react'
 import { Pressable, View } from 'react-native'
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated'
@@ -104,7 +105,7 @@ export function Toast({
         )}
         <Pressable
           onPress={onDismiss}
-          accessibilityLabel="Dismiss"
+          accessibilityLabel={t("Dismiss")}
           hitSlop={8}
           className="p-1.5 -m-1.5 active:opacity-60"
         >

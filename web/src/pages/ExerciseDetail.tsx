@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Dumbbell, Trophy } from 'lucide-react'
-import { format, subDays } from 'date-fns'
+import { subDays } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import Model, { IExerciseData } from 'react-body-highlighter'
 import { exerciseAPI } from '../services/api'
@@ -9,7 +9,7 @@ import { useWorkoutSession } from '../stores/workoutSession'
 import { useSettingsStore, weightShort, displayWeight } from '../stores/settings'
 import { useTheme } from '../hooks/useTheme'
 import PeriodSelector from '../components/PeriodSelector'
-import { apiErrorMessage, isNotFound, types } from '@lyftr/shared'
+import { apiErrorMessage, isNotFound, types, formatLocalized, t } from '@lyftr/shared'
 import { ErrorState } from '../components/ui'
 import { muscleColor, muscleColorBordered, EQUIPMENT_LABEL, muscleToBodySlugs } from '../utils/exerciseUtils'
 
@@ -25,10 +25,10 @@ function buildBodyData(exercise: types.Exercise): IExerciseData[] {
 
   const data: IExerciseData[] = []
   if (primarySlugs.length > 0) {
-    data.push({ name: 'Primary', muscles: primarySlugs as any, frequency: 2 })
+    data.push({ name: t('Primary'), muscles: primarySlugs as any, frequency: 2 })
   }
   if (secondarySlugs.length > 0) {
-    data.push({ name: 'Secondary', muscles: secondarySlugs as any, frequency: 1 })
+    data.push({ name: t('Secondary'), muscles: secondarySlugs as any, frequency: 1 })
   }
   return data
 }
@@ -78,7 +78,7 @@ export default function ExerciseDetail() {
       })
       .catch(err => {
         setGone(isNotFound(err))
-        setError(apiErrorMessage(err, "The server didn't say what went wrong."))
+        setError(apiErrorMessage(err, t("The server didn't say what went wrong.")))
       })
       .finally(() => setLoading(false))
   }, [exerciseId, retryKey])
@@ -99,10 +99,10 @@ export default function ExerciseDetail() {
     return (
       <ErrorState
         size="page"
-        title="Couldn't load this exercise"
+        title={t("Couldn't load this exercise")}
         message={error}
         onRetry={gone ? undefined : () => { setError(null); setRetryKey(k => k + 1) }}
-        secondary={<button onClick={() => navigate(-1)} className="btn-secondary btn-sm">Go back</button>}
+        secondary={<button onClick={() => navigate(-1)} className="btn-secondary btn-sm">{t("Go back")}</button>}
       />
     )
   }
@@ -126,7 +126,7 @@ export default function ExerciseDetail() {
       {/* Header */}
       <div className="flex items-start gap-3">
         <button
-          aria-label="Go back"
+          aria-label={t("Go back")}
           onClick={() => navigate(-1)}
           className="p-2 hover:bg-surface-muted rounded-lg transition-colors mt-0.5 flex-shrink-0"
         >
@@ -142,7 +142,7 @@ export default function ExerciseDetail() {
 
       {/* Muscle diagram */}
       <div className="card p-4">
-        <p className="text-xs font-semibold text-tx-muted uppercase tracking-wider mb-3">Muscles Worked</p>
+        <p className="text-xs font-semibold text-tx-muted uppercase tracking-wider mb-3">{t("Muscles Worked")}</p>
 
         <div className="flex items-start justify-center gap-6">
           <div className="flex flex-col items-center gap-1">
@@ -153,7 +153,7 @@ export default function ExerciseDetail() {
               highlightedColors={highlightColors}
               style={{ width: '140px' }}
             />
-            <span className="text-xs text-tx-muted">Front</span>
+            <span className="text-xs text-tx-muted">{t("Front")}</span>
           </div>
           <div className="flex flex-col items-center gap-1">
             <Model
@@ -163,7 +163,7 @@ export default function ExerciseDetail() {
               highlightedColors={highlightColors}
               style={{ width: '140px' }}
             />
-            <span className="text-xs text-tx-muted">Back</span>
+            <span className="text-xs text-tx-muted">{t("Back")}</span>
           </div>
         </div>
 
@@ -171,11 +171,11 @@ export default function ExerciseDetail() {
         <div className="flex items-center gap-4 mt-3 justify-center">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#22d3ee' }} />
-            <span className="text-xs text-tx-muted">Primary</span>
+            <span className="text-xs text-tx-muted">{t("Primary")}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#0e7490' }} />
-            <span className="text-xs text-tx-muted">Secondary</span>
+            <span className="text-xs text-tx-muted">{t("Secondary")}</span>
           </div>
         </div>
       </div>
@@ -208,7 +208,7 @@ export default function ExerciseDetail() {
       {/* Secondary muscles */}
       {exercise.secondary_muscles?.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-tx-muted uppercase tracking-wider mb-2">Also works</p>
+          <p className="text-xs font-semibold text-tx-muted uppercase tracking-wider mb-2">{t("Also works")}</p>
           <div className="flex flex-wrap gap-1.5">
             {exercise.secondary_muscles.map(m => (
               <span key={m} className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${muscleColor(m)}`}>
@@ -224,14 +224,14 @@ export default function ExerciseDetail() {
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-3">
             <Trophy className="w-4 h-4 text-warning-400" />
-            <p className="text-xs font-semibold text-tx-muted uppercase tracking-wider">Your Best</p>
+            <p className="text-xs font-semibold text-tx-muted uppercase tracking-wider">{t("Your Best")}</p>
           </div>
           <div className="flex items-end gap-2">
             <span className="text-2xl font-bold text-tx-primary tabular-nums">{displayWeight(pr.weight, wUnit)}</span>
             <span className="text-sm text-tx-muted mb-0.5">{wUnit} × {pr.reps} reps</span>
           </div>
           <p className="text-xs text-tx-muted mt-1">
-            Est. 1RM: {displayWeight(pr.estimated_1rm, wUnit)} {wUnit} · {format(new Date(pr.date), 'MMM d, yyyy')}
+            Est. 1RM: {displayWeight(pr.estimated_1rm, wUnit)} {wUnit} · {formatLocalized(new Date(pr.date), 'MMM d, yyyy')}
           </p>
         </div>
       )}
@@ -239,19 +239,19 @@ export default function ExerciseDetail() {
       {/* History chart */}
       {history.length >= 2 && (() => {
         const chartData = [...filteredHistory].reverse().map(h => ({
-          date: format(new Date(h.date), 'M/d'),
+          date: formatLocalized(new Date(h.date), 'M/d'),
           weight: displayWeight(h.max_weight, wUnit),
         }))
         return (
           <div className="card p-4">
             <div className="flex items-center justify-between mb-3 gap-2">
               <p className="text-xs font-semibold text-tx-muted uppercase tracking-wider">
-                Weight Progression
+                {t('Weight Progression')}
               </p>
               <PeriodSelector options={HISTORY_PERIODS} value={historyPeriod} onChange={setHistoryPeriod} />
             </div>
             {chartData.length < 2 ? (
-              <div className="flex items-center justify-center h-[110px] text-tx-muted text-sm">No data for this period</div>
+              <div className="flex items-center justify-center h-[110px] text-tx-muted text-sm">{t("No data for this period")}</div>
             ) : (
             <ResponsiveContainer width="100%" height={110}>
               <LineChart data={chartData}>
@@ -269,7 +269,7 @@ export default function ExerciseDetail() {
                     borderRadius: 8,
                     fontSize: 11,
                   }}
-                  formatter={(v: number) => [`${v} ${wUnit}`, 'Max weight']}
+                  formatter={(v: number) => [`${v} ${wUnit}`, t('Max weight')]}
                 />
                 <Line
                   type="monotone"
@@ -289,7 +289,7 @@ export default function ExerciseDetail() {
       {/* Instructions */}
       {descLines.length > 0 && (
         <div className="card p-4">
-          <p className="text-xs font-semibold text-tx-muted uppercase tracking-wider mb-3">Instructions</p>
+          <p className="text-xs font-semibold text-tx-muted uppercase tracking-wider mb-3">{t("Instructions")}</p>
           <div className="space-y-2.5">
             {descLines.map((line, i) => {
               const stepMatch = line.match(/^(\d+\.)\s*(.*)/)

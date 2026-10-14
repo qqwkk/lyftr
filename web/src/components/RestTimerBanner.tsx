@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { Pause, Play, SkipForward, Check } from 'lucide-react'
 import { useWorkoutSession } from '../stores/workoutSession'
 import { useRestTimer } from '../hooks/useRestTimer'
-import { fmtClock, nextIncompleteSet } from '@lyftr/shared'
+import { fmtClock, nextIncompleteSet, t } from '@lyftr/shared'
 import { IconButton } from './ui'
 
 // Hevy/Strong-style rest panel: a thin draining progress line, a big centred
@@ -55,14 +55,16 @@ export default function RestTimerBanner({ docked = false }: { docked?: boolean }
   // Once rest is over the headline says "Rest over", so the caption carries the
   // thing you actually need next instead of repeating it.
   const label = doneSetNum == null
-    ? (done ? 'Ready' : paused ? 'Paused' : 'Rest')
+    ? (done ? t('Ready') : paused ? t('Paused') : t('Rest'))
     : done
-      ? (nextIdx !== -1 ? `Set ${nextIdx + 1} up next` : `Set ${doneSetNum} done`)
+      ? (nextIdx !== -1
+        ? t('Set {number} up next', { number: nextIdx + 1 })
+        : t('Set {number} done', { number: doneSetNum }))
       : paused
-        ? `Set ${doneSetNum} done · paused`
+        ? t('Set {number} done · paused', { number: doneSetNum })
         : nextIdx !== -1
-          ? `Set ${doneSetNum} done · set ${nextIdx + 1} next`
-          : `Set ${doneSetNum} done · resting`
+          ? t('Set {number} done · set {next} next', { number: doneSetNum, next: nextIdx + 1 })
+          : t('Set {number} done · resting', { number: doneSetNum })
 
   const secBtn = 'flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-semibold tabular-nums bg-surface-muted border border-surface-border text-tx-secondary active:scale-95'
   const brandBtn = 'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-brand-500 text-white active:scale-95'
@@ -92,13 +94,13 @@ export default function RestTimerBanner({ docked = false }: { docked?: boolean }
           {done ? (
             <>
               <Check className="w-7 h-7 text-success-500" />
-              <span className="font-display text-3xl font-black text-tx-primary leading-none">Rest over</span>
+              <span className="font-display text-3xl font-black text-tx-primary leading-none">{t("Rest over")}</span>
             </>
           ) : (
             <>
               <IconButton
                 icon={paused ? Play : Pause}
-                label={paused ? 'Resume rest timer' : 'Pause rest timer'}
+                label={paused ? t('Resume rest timer') : t('Pause rest timer')}
                 onClick={paused ? resumeRest : pauseRest}
                 variant="ghost" size="lg"
                 className="!text-brand-500 hover:!text-brand-500"
@@ -109,12 +111,12 @@ export default function RestTimerBanner({ docked = false }: { docked?: boolean }
         </div>
         {/* full-width actions */}
         {done ? (
-          <button onClick={() => clearRest()} className={doneBtn}><Check className="w-4 h-4" />Done</button>
+          <button onClick={() => clearRest()} className={doneBtn}><Check className="w-4 h-4" />{t("Done")}</button>
         ) : (
           <div className="flex gap-2">
-            <button onClick={() => adjustRest(-15)} aria-label="Shorten rest by 15 seconds" className={secBtn}>−15</button>
-            <button onClick={() => adjustRest(15)} aria-label="Extend rest by 15 seconds" className={secBtn}>+15</button>
-            <button onClick={() => clearRest()} className={brandBtn}><SkipForward className="w-4 h-4" />Skip</button>
+            <button onClick={() => adjustRest(-15)} aria-label={t("Shorten rest by 15 seconds")} className={secBtn}>−15</button>
+            <button onClick={() => adjustRest(15)} aria-label={t("Extend rest by 15 seconds")} className={secBtn}>+15</button>
+            <button onClick={() => clearRest()} className={brandBtn}><SkipForward className="w-4 h-4" />{t("Skip")}</button>
           </div>
         )}
       </div>

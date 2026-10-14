@@ -1,3 +1,4 @@
+import { t } from '@lyftr/shared'
 import { View } from 'react-native'
 import { Card, PageHeader, Screen, Skeleton, SkeletonList, SkeletonStatRow } from '../ui'
 
@@ -11,8 +12,8 @@ export function WeightSkeleton() {
     <Screen>
       <View className="gap-5 py-4">
         <PageHeader
-          title="Weight"
-          subtitle="Track your body weight over time"
+          title={t("Weight")}
+          subtitle={t("Track your body weight over time")}
           action={<Skeleton width={44} height={24} radius={999} />}
         />
 

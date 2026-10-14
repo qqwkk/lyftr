@@ -12,6 +12,7 @@
 //    syntax breaks the transform. The nutritionMeta test doubles as a canary for this.
 module.exports = {
   preset: 'jest-expo',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testMatch: ['<rootDir>/src/**/*.test.{ts,tsx}'],
   // No trailing slash after the group: the prefixes must prefix-match so `react-native`
   // covers react-native-svg/-reanimated/-worklets/-css-interop and `expo` covers

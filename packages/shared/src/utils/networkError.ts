@@ -1,3 +1,5 @@
+import { t } from '../i18n'
+
 // Classifies transport-level failures (no HTTP response) into something actionable.
 //
 // Why this exists: axios reports every response-less failure identically. RN's XHR
@@ -98,25 +100,25 @@ const BRIEF: Record<NetworkFailure, string> = {
 }
 
 export const networkFailureMessage = (err: any, detail: MessageDetail = 'brief'): string => {
-  if (detail === 'brief') return BRIEF[classifyNetworkError(err)]
+  if (detail === 'brief') return t(BRIEF[classifyNetworkError(err)])
   switch (classifyNetworkError(err)) {
     // Deliberately does NOT say "update the app". This build already permits cleartext, so
     // if the OS still blocked it the cause is something an update can't fix — most likely
     // iOS, where NSAllowsLocalNetworking covers LAN IPs, `.local` and unqualified names but
     // NOT a custom TLD like `.lan`. Promising an update would send that user in circles.
     case 'cleartext-blocked':
-      return 'This device blocked the connection because the URL uses plain http://. Switch the server to https:// — a reverse proxy can issue a certificate for a LAN-only hostname with no ports open.'
+      return t('This device blocked the connection because the URL uses plain http://. Switch the server to https:// — a reverse proxy can issue a certificate for a LAN-only hostname with no ports open.')
     // Leads with the real-certificate path on purpose. Installing a CA is a device-wide
     // action — it affects every app that trusts the user store, not just Lyftr — so it is
     // offered as the fallback it is, not as the headline fix.
     case 'certificate-untrusted':
-      return "The server's certificate isn't trusted by this device. Best fix: give the server a real certificate — a reverse proxy can issue one for a LAN-only hostname with no ports open. Or install your own CA under Settings → Security → Encryption & credentials, which trusts it for every app on the device, not just Lyftr."
+      return t("The server's certificate isn't trusted by this device. Best fix: give the server a real certificate — a reverse proxy can issue one for a LAN-only hostname with no ports open. Or install your own CA under Settings → Security → Encryption & credentials, which trusts it for every app on the device, not just Lyftr.")
     case 'hostname-mismatch':
-      return "The server's certificate doesn't cover this address. Reissue it with this hostname or IP listed in the certificate's Subject Alternative Name (SAN)."
+      return t("The server's certificate doesn't cover this address. Reissue it with this hostname or IP listed in the certificate's Subject Alternative Name (SAN).")
     case 'timeout':
-      return "The server didn't respond in time. Check that it's running and reachable from this device."
+      return t("The server didn't respond in time. Check that it's running and reachable from this device.")
     case 'unreachable':
-      return "Couldn't connect to the server. Check the URL and that the backend is running."
+      return t("Couldn't connect to the server. Check the URL and that the backend is running.")
     default: {
       const base = isWeb()
         ? "Can't reach the server. Check the URL, that the backend is running, and that it allows this app's origin (CORS)."
@@ -124,7 +126,8 @@ export const networkFailureMessage = (err: any, detail: MessageDetail = 'brief')
       // Surface the raw native reason rather than guessing: an unmatched string is exactly
       // the case where our copy would otherwise be confidently wrong.
       const detail = nativeErrorDetail(err)
-      return detail ? `${base} (${detail})` : base
+      const translated = t(base)
+      return detail ? `${translated} (${detail})` : translated
     }
   }
 }

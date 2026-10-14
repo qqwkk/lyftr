@@ -1,3 +1,5 @@
+import { t } from '../i18n'
+
 // The platform-agnostic half of exercise presentation.
 //
 // What is NOT here, and why: each app keeps its own muscle→colour table and its own
@@ -21,7 +23,7 @@
 // that has not yet run the taxonomy migration still holds rows spelled that way, and
 // a label table that silently stopped matching them would degrade to raw values in
 // the UI with nothing to explain why.
-export const EQUIPMENT_LABEL: Record<string, string> = {
+const EQUIPMENT_LABEL_EN: Record<string, string> = {
   'body-only':      'Bodyweight',
   'barbell':        'Barbell',
   'dumbbell':       'Dumbbell',
@@ -43,6 +45,13 @@ export const EQUIPMENT_LABEL: Record<string, string> = {
   'exercise ball': 'Exercise Ball',
   'foam roll':     'Foam Roll',
 }
+
+// Resolve at access time so changing the language updates already-mounted pickers.
+export const EQUIPMENT_LABEL: Record<string, string> = new Proxy(EQUIPMENT_LABEL_EN, {
+  get: (labels, key: string | symbol) => typeof key === 'string' && key in labels
+    ? t(labels[key])
+    : Reflect.get(labels, key),
+})
 
 // Resolve a muscle name to body-diagram slugs against the caller's table: exact match
 // on the normalized key first, then a substring match in either direction so free-text
