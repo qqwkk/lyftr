@@ -110,7 +110,25 @@ func main() {
 	// side-effect of reads, so a fresh instance starts with an empty one and is
 	// fully functional.
 	s := stores.New(db.DB)
-	s.Exercise.UseCatalog(oedb.New(config.C.OEDBBaseURL, config.Version()))
+	// EXERCISE_CATALOG=local leaves the store with no catalog, which is already the
+	// shape every read is written against: Search serves the local table, and the
+	// cache-management endpoints answer ErrNoCatalog. Nothing in the request path
+	// reaches a third party.
+	//
+	// The warning is the whole reason this is not just "unset the URL": local mode on
+	// an empty table is a silently unusable exercise picker, and the one operation
+	// that would fill it (RefreshCached) only refreshes rows already held. Importing
+	// is an upstream-mode act.
+	if config.C.ExerciseCatalog == config.CatalogLocal {
+		if n, err := s.Exercise.CachedCount(); err == nil && n == 0 {
+			log.Printf("WARNING: EXERCISE_CATALOG=local with an empty exercises table — the " +
+				"exercise picker will be empty and this instance cannot fill it. Start once " +
+				"with EXERCISE_CATALOG=upstream and read GET /api/v1/exercises?limit=1000 to " +
+				"import the published catalog, then switch back to local.")
+		}
+	} else {
+		s.Exercise.UseCatalog(oedb.New(config.C.OEDBBaseURL, config.Version()))
+	}
 
 	if config.C.DemoMode {
 		go seed.DemoData(db.DB, s.Exercise)

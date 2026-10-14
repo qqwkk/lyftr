@@ -15,6 +15,7 @@ All configuration lives in a `.env` file at the project root.
 | `BACKEND_ORIGIN` | `backend:3000` | Docker **service name**:port the frontend proxies `/api` to — not a host IP. Only change the port, to match a custom backend `PORT`. |
 | `REGISTRATION` | `open` | Who may create an account: `open`, `first-user`, or `closed`. See below. |
 | `DEMO_MODE` | `false` | Seeds the demo account and sample data. Leave off — its password is public. |
+| `EXERCISE_CATALOG` | `upstream` | Where exercises come from: `upstream` (query open-exercise-db) or `local` (serve only what this instance already holds, no outbound requests). See below. |
 
 ## Locking down registration
 
@@ -175,6 +176,49 @@ connect() failed (111: Connection refused)
 ```
 
 If you run the backend on a custom `PORT`, change **only** the port (e.g. `backend:3008`).
+
+## Cutting the exercise catalog loose
+
+Lyftr does not ship an exercise library. It queries [open-exercise-db](https://github.com/Cawlumm/open-exercise-db)
+as you search and keeps a copy of every row it has shown you, so a fresh instance starts with
+an empty table and fills as it is used.
+
+If you would rather your instance made no third-party request at all, import the whole
+published catalog once and then close the source. Import is a single unfiltered read — the
+backend answers it through oedb's bulk export, so ~870 exercises arrive in one request:
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost/api/v1/auth/login   -H 'Content-Type: application/json'   -d '{"email":"you@example.com","password":"..."}' | jq -r .data.token)
+
+curl -s -H "Authorization: Bearer $TOKEN" 'http://localhost/api/v1/exercises?limit=1000' | jq '.data | length'
+curl -s -H "Authorization: Bearer $TOKEN" http://localhost/api/v1/admin/seed-status
+```
+
+Then close it:
+
+```bash
+EXERCISE_CATALOG=local
+```
+
+```bash
+docker compose up -d
+```
+
+Search, filtering and paging all keep working — they are answered from your own table, which
+is also the fallback that has always covered oedb being slow or unreachable. What stops is
+importing: **Settings → Exercise Library → Refresh cached** now answers *"This server has no
+exercise catalog configured."*, and an exercise nobody has ever searched for will not appear.
+Switch back to `upstream` for an afternoon if you want to pick up newly published exercises.
+
+:::caution
+`local` cannot fill an empty catalog. If you set it before importing, the exercise picker is
+simply empty and there is no in-app way to populate it — the backend says so on every start:
+
+```
+WARNING: EXERCISE_CATALOG=local with an empty exercises table — the exercise picker will
+be empty and this instance cannot fill it.
+```
+:::
 
 ## Re-syncing exercises
 

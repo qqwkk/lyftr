@@ -15,6 +15,7 @@ services:
       - DB_TYPE=sqlite
       - DB_PATH=/app/data/lyftr.db
       - REGISTRATION=${REGISTRATION:-open}
+      - EXERCISE_CATALOG=${EXERCISE_CATALOG:-upstream}
       - DEMO_MODE=${DEMO_MODE:-false}
     expose:
       - "3000"

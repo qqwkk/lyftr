@@ -77,3 +77,36 @@ func TestValidRegistration(t *testing.T) {
 		}
 	}
 }
+
+// Same contract as REGISTRATION, for the same reason. An instance set to `local` makes
+// no outbound request for its exercise catalog, so a typo that silently fell back to
+// upstream would leave someone believing they had cut a third-party dependency they
+// still have.
+func TestValidExerciseCatalog(t *testing.T) {
+	for _, mode := range []string{CatalogUpstream, CatalogLocal} {
+		if !ValidExerciseCatalog(mode) {
+			t.Errorf("ValidExerciseCatalog(%q) = false, want true", mode)
+		}
+	}
+	for _, mode := range []string{"", "locl", "Local", "oedb", "off", "none", "true"} {
+		if ValidExerciseCatalog(mode) {
+			t.Errorf("ValidExerciseCatalog(%q) = true, want false", mode)
+		}
+	}
+}
+
+// Unset must keep querying upstream: that is what every existing instance does, and a
+// default of `local` would turn a working picker into an empty one on upgrade.
+func TestExerciseCatalogDefaultsToUpstream(t *testing.T) {
+	t.Setenv("EXERCISE_CATALOG", "")
+	Load()
+	if C.ExerciseCatalog != CatalogUpstream {
+		t.Errorf("ExerciseCatalog with nothing set = %q, want %q", C.ExerciseCatalog, CatalogUpstream)
+	}
+
+	t.Setenv("EXERCISE_CATALOG", CatalogLocal)
+	Load()
+	if C.ExerciseCatalog != CatalogLocal {
+		t.Errorf("EXERCISE_CATALOG=local gave %q", C.ExerciseCatalog)
+	}
+}

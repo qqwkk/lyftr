@@ -30,8 +30,20 @@ type Config struct {
 	Registration string
 	// OEDBBaseURL is the open-exercise-db instance Lyftr queries for its exercise
 	// catalog. Empty selects the hosted one; point it at a self-hosted catalog, or
-	// at a test double, by setting OEDB_BASE_URL.
+	// at a test double, by setting OEDB_BASE_URL. Ignored when ExerciseCatalog is
+	// CatalogLocal.
 	OEDBBaseURL string
+	// ExerciseCatalog is where exercises come from: CatalogUpstream queries
+	// open-exercise-db and records what it shows, CatalogLocal serves only the rows
+	// this instance already holds and makes no outbound request at all.
+	//
+	// Local is for an instance that has finished importing (ask it once for an
+	// unfiltered page — `GET /api/v1/exercises?limit=1000` pulls the whole published
+	// catalog through the bulk export) and now wants no third-party dependency in the
+	// request path. It is not a way to start one: a local instance with an empty
+	// exercises table has no way to fill it, which is why main warns about exactly
+	// that case.
+	ExerciseCatalog string
 
 	// DemoMode seeds the demo account and its 8 weeks of sample data. Off outside
 	// development: the credentials are published in the README, so an instance that
@@ -46,6 +58,13 @@ const (
 )
 
 var registrationModes = []string{RegistrationOpen, RegistrationClosed, RegistrationFirstUser}
+
+const (
+	CatalogUpstream = "upstream"
+	CatalogLocal    = "local"
+)
+
+var catalogModes = []string{CatalogUpstream, CatalogLocal}
 
 var C *Config
 
@@ -83,7 +102,8 @@ func Load() {
 		Env:        env,
 		Version:    buildVersion,
 
-		OEDBBaseURL: getEnv("OEDB_BASE_URL", ""),
+		OEDBBaseURL:     getEnv("OEDB_BASE_URL", ""),
+		ExerciseCatalog: getEnv("EXERCISE_CATALOG", CatalogUpstream),
 
 		Registration: getEnv("REGISTRATION", RegistrationOpen),
 		// Opt-in everywhere, including development. This used to default to
@@ -110,6 +130,13 @@ func Load() {
 		log.Fatalf("REGISTRATION must be one of %v, got %q", registrationModes, C.Registration)
 	}
 
+	// Same reasoning as REGISTRATION, in the other direction: EXERCISE_CATALOG=locl
+	// falling back to upstream would leave someone believing their instance makes no
+	// third-party requests while it still does.
+	if !ValidExerciseCatalog(C.ExerciseCatalog) {
+		log.Fatalf("EXERCISE_CATALOG must be one of %v, got %q", catalogModes, C.ExerciseCatalog)
+	}
+
 	if C.Registration == RegistrationFirstUser && C.DemoMode {
 		log.Printf("WARNING: REGISTRATION=first-user with DEMO_MODE=true — the seeded demo " +
 			"account already occupies the users table, so registration will never open. " +
@@ -119,6 +146,10 @@ func Load() {
 
 func ValidRegistration(mode string) bool {
 	return slices.Contains(registrationModes, mode)
+}
+
+func ValidExerciseCatalog(mode string) bool {
+	return slices.Contains(catalogModes, mode)
 }
 
 func getEnv(key, fallback string) string {
